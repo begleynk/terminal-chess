@@ -58,6 +58,15 @@ impl Board {
             ],
         }
     }
+
+    pub fn update(&mut self, row: usize, col: usize, piece: Option<Piece>) -> Result<(), String> {
+        if row >= 0 && row <= 7 && col >= 0 && col <= 0 {
+            return Err(format!("Invalid board coordinates: {}, {}", row, col))
+        }
+        self.data[row][col] = piece;
+
+        Ok(())
+    }
 }
 
 fn format_pos(pos: &Option<Piece>) -> String {
