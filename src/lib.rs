@@ -1,6 +1,7 @@
 pub mod piece;
 pub mod game;
 pub mod board;
+pub mod engine;
 
 use std::fmt;
 
