@@ -35,12 +35,12 @@ pub fn determine_valid_moves(
 
     // Moves forward
     let mut mover = Mover::new(side);
-    moves.push(mover.move_to(from).fw().make());
+    moves.push(mover.move_to(from).north().make());
 
     if is_starting_coordinate(from, side) {
         // Moves forward twice
         let mut mover = Mover::new(side);
-        moves.push(mover.move_to(from).fw().fw().make());
+        moves.push(mover.move_to(from).north().north().make());
     }
 
     moves

@@ -51,7 +51,7 @@ impl Mover {
         Mover { side: side, current_row: 0, current_column: 0}
     }
 
-    fn fw(mut self) -> Self {
+    fn north(mut self) -> Self {
         match self.side {
             Side::White => self.current_row += 1,
             Side::Black => self.current_row -= 1,
@@ -60,7 +60,7 @@ impl Mover {
         self
     }
 
-    fn bw(mut self) -> Self {
+    fn south(mut self) -> Self {
         match self.side {
             Side::White => self.current_row -= 1,
             Side::Black => self.current_row += 1,
@@ -69,7 +69,7 @@ impl Mover {
         self
     }
 
-    fn left(mut self) -> Self {
+    fn west(mut self) -> Self {
         match self.side {
             Side::White => self.current_column -= 1,
             Side::Black => self.current_column += 1,
@@ -78,7 +78,7 @@ impl Mover {
         self
     }
 
-    fn right(mut self) -> Self {
+    fn east(mut self) -> Self {
         match self.side {
             Side::White => self.current_column += 1,
             Side::Black => self.current_column -= 1,

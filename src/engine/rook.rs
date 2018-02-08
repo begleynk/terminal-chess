@@ -34,13 +34,13 @@ pub fn determine_valid_moves(
 
     let mut moves = vec![];
     // North
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north() )));
     // East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.right() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.east() )));
     // South
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south() )));
     // West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.left() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.west() )));
     moves
 }
 

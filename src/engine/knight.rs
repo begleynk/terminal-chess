@@ -34,17 +34,17 @@ pub fn determine_valid_moves(
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
 
     // North moves
-    moves.push(Mover::new(side).move_to(from).fw().fw().left().make());
-    moves.push(Mover::new(side).move_to(from).fw().fw().right().make());
+    moves.push(Mover::new(side).move_to(from).north().north().west().make());
+    moves.push(Mover::new(side).move_to(from).north().north().east().make());
     // East
-    moves.push(Mover::new(side).move_to(from).right().right().fw().make());
-    moves.push(Mover::new(side).move_to(from).right().right().bw().make());
+    moves.push(Mover::new(side).move_to(from).east().east().north().make());
+    moves.push(Mover::new(side).move_to(from).east().east().south().make());
     // South
-    moves.push(Mover::new(side).move_to(from).bw().bw().right().make());
-    moves.push(Mover::new(side).move_to(from).bw().bw().left().make());
+    moves.push(Mover::new(side).move_to(from).south().south().east().make());
+    moves.push(Mover::new(side).move_to(from).south().south().west().make());
     // West
-    moves.push(Mover::new(side).move_to(from).left().left().bw().make());
-    moves.push(Mover::new(side).move_to(from).left().left().fw().make());
+    moves.push(Mover::new(side).move_to(from).west().west().south().make());
+    moves.push(Mover::new(side).move_to(from).west().west().north().make());
 
     moves
         .into_iter()

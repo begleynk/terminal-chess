@@ -1,4 +1,3 @@
-
 use game::{Action, GameState};
 use board::{Board, Coordinate};
 use piece::{Piece, Rank};
@@ -35,21 +34,21 @@ pub fn determine_valid_moves(
 
     let mut moves = vec![];
     // North
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north() )));
     // North East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw().right() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north().east() )));
     // East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.right() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.east() )));
     // South East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw().right() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south().east() )));
     // South
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south() )));
     // South West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw().left() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south().west() )));
     // West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.left() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.west() )));
     // North West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw().left() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north().west() )));
     moves
 }
 
