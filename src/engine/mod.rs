@@ -5,6 +5,7 @@ use Side;
 
 mod pawn;
 mod knight;
+mod bishop;
 
 pub fn apply_action(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
     match *action {
@@ -21,7 +22,7 @@ fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, board: &mut Boa
     match piece.rank() {
         Rank::Pawn => pawn::apply_move(piece, from, to, board, state),
         Rank::Knight => knight::apply_move(piece, from, to, board, state),
-        Rank::Bishop => unimplemented!(),
+        Rank::Bishop => bishop::apply_move(piece, from, to, board, state),
         Rank::Rook => unimplemented!(),
         Rank::Queen => unimplemented!(),
         Rank::King => unimplemented!(),

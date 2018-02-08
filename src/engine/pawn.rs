@@ -13,10 +13,10 @@ pub fn apply_move(
 ) -> Result<(), String> {
     assert_eq!(piece.rank(), Rank::Pawn);
 
-    let valid_moves = determine_valid_moves(piece, from, board, state.next_to_move());
+    let valid_moves = determine_valid_moves(from, board, state.next_to_move());
 
     if valid_moves.contains(to) {
-        board.update(to, Some(piece.clone()));
+        board.update(to, Some(piece.clone())).expect("Bad move found. Bug");
         state.add_action_to_history(Action::MovePiece(piece.clone(), from.clone(), to.clone()));
         state.toggle_side();
 
@@ -27,7 +27,6 @@ pub fn apply_move(
 }
 
 pub fn determine_valid_moves(
-    piece: &Piece,
     from: &Coordinate,
     board: &Board,
     side: Side,
@@ -73,10 +72,10 @@ mod tests {
         let mut board = Board::default();
 
         let piece = board
-            .piece_at(Coordinate::from_human("e2".to_string()).unwrap())
+            .piece_at(coord!("e2"))
             .unwrap();
-        let from = Coordinate::from_human("e2".to_string()).unwrap();
-        let to = Coordinate::from_human("e3".to_string()).unwrap();
+        let from = coord!("e2");
+        let to = coord!("e3");
 
         assert_eq!(
             apply_move(&piece, &from, &to, &mut board, &mut state),
