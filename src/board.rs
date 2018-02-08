@@ -79,7 +79,7 @@ impl Board {
     }
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Coordinate {
     row: usize,
     column: usize,
@@ -156,6 +156,11 @@ impl Coordinate {
         };
 
         format!("{}{}", col, self.row + 1)
+    }
+}
+impl fmt::Debug for Coordinate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Coordinate {{ row: {}, column: {}, (notation: {}) }}", self.row(), self.column(), self.to_human())
     }
 }
 

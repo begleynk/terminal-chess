@@ -36,6 +36,13 @@ impl GameState {
     pub fn add_action_to_history(&mut self, action: Action) {
         self.history.push(action);
     }
+
+    pub fn toggle_side(&mut self) {
+        match self.next_to_move {
+            Side::White => self.next_to_move = Side::Black,
+            Side::Black => self.next_to_move = Side::White,
+        }
+    }
 }
 
 #[derive(PartialEq)]

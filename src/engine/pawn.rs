@@ -18,6 +18,7 @@ pub fn apply_move(
     if valid_moves.contains(to) {
         board.update(to, Some(piece.clone()));
         state.add_action_to_history(Action::MovePiece(piece.clone(), from.clone(), to.clone()));
+        state.toggle_side();
 
         Ok(())
     } else {
@@ -39,18 +40,27 @@ pub fn determine_valid_moves(
     mover.fw();
     moves.push(mover.make());
 
-    // Moves forward twice
-    let mut mover = Mover::new(side);
-    mover.move_to(from);
-    mover.fw();
-    mover.fw();
-    moves.push(mover.make());
+    if is_starting_coordinate(from, side) {
+        // Moves forward twice
+        let mut mover = Mover::new(side);
+        mover.move_to(from);
+        mover.fw();
+        mover.fw();
+        moves.push(mover.make());
+    }
 
     moves
         .into_iter()
         .filter_map(|m| m.ok()) // Filter valid coordinates
         .filter(|c| board.is_empty(*c)) // Filter moves to positions that are taken
         .collect()
+}
+
+fn is_starting_coordinate(coordinate: &Coordinate, side: Side) -> bool {
+    match side {
+        Side::White => coordinate.row() == 1,
+        Side::Black => coordinate.row() == 6,
+    }
 }
 
 #[cfg(test)]
@@ -81,6 +91,7 @@ mod tests {
             &Some(piece)
         );
         assert_eq!(state.history().len(), 1, "History not updated");
+        assert_eq!(state.next_to_move(), Side::Black, "Side not updated");
     }
 
     #[test]
@@ -130,6 +141,37 @@ mod tests {
         assert_eq!(
             state.history().len(),
             0,
+            "History updated when it should not have"
+        );
+    }
+
+    #[test]
+    fn cannot_move_two_places_if_not_on_starting_row() {
+        let mut state = GameState::new();
+
+        let mut board = Board::default();
+
+        // Move pawn to e3
+        assert_eq!(apply_move(&board.piece_at(coord!("e2")).unwrap(), &coord!("e2"), &coord!("e3"), &mut board, &mut state), Ok(()));
+        // Random black move
+        assert_eq!(apply_move(&board.piece_at(coord!("b7")).unwrap(), &coord!("b7"), &coord!("b6"), &mut board, &mut state), Ok(()));
+
+        // Try to move e3 to e5
+        let piece = board.piece_at(coord!("e3")).unwrap();
+        let from = coord!("e3");
+        let to = coord!("e5");
+
+        assert_eq!(
+            apply_move(&piece, &from, &to, &mut board, &mut state),
+            Err(("Invalid move".to_string()))
+        );
+        assert_eq!(
+            board.piece_at(coord!("e4")),
+            &None
+        );
+        assert_eq!(
+            state.history().len(),
+            2,
             "History updated when it should not have"
         );
     }
