@@ -38,18 +38,18 @@ fn apply_promotion(action: &Action, board: &mut Board, state: &mut GameState) ->
 }
 
 
-pub struct Mover {
+struct Mover {
     side: Side,
     current_row: i8,
     current_column: i8
 }
 
 impl Mover {
-    pub fn new(side: Side) -> Mover {
+    fn new(side: Side) -> Mover {
         Mover { side: side, current_row: 0, current_column: 0}
     }
 
-    pub fn fw(mut self) -> Self {
+    fn fw(mut self) -> Self {
         match self.side {
             Side::White => self.current_row += 1,
             Side::Black => self.current_row -= 1,
@@ -58,7 +58,7 @@ impl Mover {
         self
     }
 
-    pub fn bw(mut self) -> Self {
+    fn bw(mut self) -> Self {
         match self.side {
             Side::White => self.current_row -= 1,
             Side::Black => self.current_row += 1,
@@ -67,7 +67,7 @@ impl Mover {
         self
     }
 
-    pub fn left(mut self) -> Self {
+    fn left(mut self) -> Self {
         match self.side {
             Side::White => self.current_column -= 1,
             Side::Black => self.current_column += 1,
@@ -76,7 +76,7 @@ impl Mover {
         self
     }
 
-    pub fn right(mut self) -> Self {
+    fn right(mut self) -> Self {
         match self.side {
             Side::White => self.current_column += 1,
             Side::Black => self.current_column -= 1,
@@ -85,14 +85,14 @@ impl Mover {
         self
     }
 
-    pub fn move_to(mut self, coordinate: &Coordinate) -> Self {
+    fn move_to(mut self, coordinate: &Coordinate) -> Self {
         self.current_column = coordinate.column() as i8;
         self.current_row = coordinate.row() as i8;
 
         self
     }
 
-    pub fn make(self) -> Result<Coordinate, String> {
+    fn make(self) -> Result<Coordinate, String> {
         Coordinate::new_safe(self.current_row as usize, self.current_column as usize)
     }
 }
