@@ -111,12 +111,6 @@ mod tests {
         board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Bishop)));
         board.update(&coord!("g7"), Some(Piece::pack(Side::White, Rank::Bishop)));
 
-        let piece = board
-            .piece_at(Coordinate::from_human("a1".to_string()).unwrap())
-            .unwrap();
-        let from = Coordinate::from_human("a1".to_string()).unwrap();
-        let to = Coordinate::from_human("g7".to_string()).unwrap();
-
         let valid_moves = determine_valid_moves(&coord!("a1"), &board, Side::White);
 
         assert_eq!(valid_moves,vec![
