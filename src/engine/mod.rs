@@ -97,3 +97,26 @@ impl Mover {
         Coordinate::new_safe(self.current_row as usize, self.current_column as usize)
     }
 }
+
+// Takes a closure that drives a mover, moving in a particular direction
+// until it hits another piece, or the edge of the board.
+fn find_moves_in_direction<F>(starting_coordinate: &Coordinate, side: Side, board: &Board, closure: F) -> Vec<Coordinate> where F: Fn(Mover) -> Mover {
+    let mut accumulator = vec![];
+    let mut current_coord = starting_coordinate.clone();
+    for _ in 0..7 {
+        let mut mover = Mover::new(side).move_to(&current_coord);
+        mover = closure(mover);
+
+        if let Ok(next) = mover.make() {
+            if board.is_empty(next) {
+                accumulator.push(next);
+                current_coord = next;
+            } else {
+                break
+            }
+        } else {
+            break;
+        }
+    }
+    accumulator
+} 

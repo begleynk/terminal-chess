@@ -2,7 +2,7 @@ use game::{Action, GameState};
 use board::{Board, Coordinate};
 use piece::{Piece, Rank};
 use Side;
-use engine::Mover;
+use engine::{Mover, find_moves_in_direction};
 
 pub fn apply_move(
     piece: &Piece,
@@ -34,64 +34,14 @@ pub fn determine_valid_moves(
 
     let mut moves = vec![];
     // North
-    let mut current_coord = from.clone();
-    for _ in 0..7 {
-        if let Ok(next) = Mover::new(side).move_to(&current_coord).fw().make() {
-            if board.is_empty(next) {
-                moves.push(next);
-                current_coord = next;
-            } else {
-                break
-            }
-        } else {
-            break;
-        }
-    }
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw() )));
     // East
-    let mut current_coord = from.clone();
-    for _ in 0..7 {
-        if let Ok(next) = Mover::new(side).move_to(&current_coord).right().make() {
-            if board.is_empty(next) {
-                moves.push(next);
-                current_coord = next;
-            } else {
-                break
-            }
-        } else {
-            break;
-        }
-    }
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.right() )));
     // South
-    let mut current_coord = from.clone();
-    for _ in 0..7 {
-        if let Ok(next) = Mover::new(side).move_to(&current_coord).bw().make() {
-            if board.is_empty(next) {
-                moves.push(next);
-                current_coord = next;
-            } else {
-                break
-            }
-        } else {
-            break;
-        }
-    }
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw() )));
     // West
-    let mut current_coord = from.clone();
-    for _ in 0..7 {
-        if let Ok(next) = Mover::new(side).move_to(&current_coord).left().make() {
-            if board.is_empty(next) {
-                moves.push(next);
-                current_coord = next;
-            } else {
-                break
-            }
-        } else {
-            break;
-        }
-    }
-
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.left() )));
     moves
-
 }
 
 #[cfg(test)]
