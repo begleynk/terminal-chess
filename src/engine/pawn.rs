@@ -57,6 +57,10 @@ pub fn determine_valid_moves(
 mod tests {
     use super::*;
 
+    macro_rules! coord {
+        ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
+    }
+
     #[test]
     fn can_move_pawns_one_step_ahead() {
         let mut state = GameState::new();
@@ -73,7 +77,7 @@ mod tests {
             Ok(())
         );
         assert_eq!(
-            board.piece_at(Coordinate::from_human("e3".to_string()).unwrap()),
+            board.piece_at(coord!("e3")),
             &Some(piece)
         );
         assert_eq!(state.history().len(), 1, "History not updated");
@@ -85,17 +89,17 @@ mod tests {
 
         let mut board = Board::default();
         let piece = board
-            .piece_at(Coordinate::from_human("e2".to_string()).unwrap())
+            .piece_at(coord!("e2"))
             .unwrap();
-        let from = Coordinate::from_human("e2".to_string()).unwrap();
-        let to = Coordinate::from_human("e4".to_string()).unwrap();
+        let from = coord!("e2");
+        let to = coord!("e4");
 
         assert_eq!(
             apply_move(&piece, &from, &to, &mut board, &mut state),
             Ok(())
         );
         assert_eq!(
-            board.piece_at(Coordinate::from_human("e4".to_string()).unwrap()),
+            board.piece_at(coord!("e4")),
             &Some(piece)
         );
         assert_eq!(state.history().len(), 1, "History not updated");
@@ -107,22 +111,20 @@ mod tests {
 
         let mut board = Board::default();
         board.update(
-            &Coordinate::from_human("e3".to_string()).unwrap(),
+            &coord!("e3"),
             Some(Piece::pack(Side::Black, Rank::Bishop)),
         ); // Bishop blocking on e3
 
-        let piece = board
-            .piece_at(Coordinate::from_human("e2".to_string()).unwrap())
-            .unwrap();
-        let from = Coordinate::from_human("e2".to_string()).unwrap();
-        let to = Coordinate::from_human("e3".to_string()).unwrap();
+        let piece = board.piece_at(coord!("e2")).unwrap();
+        let from = coord!("e2");
+        let to = coord!("e3");
 
         assert_eq!(
             apply_move(&piece, &from, &to, &mut board, &mut state),
             Err(("Invalid move".to_string()))
         );
         assert_eq!(
-            board.piece_at(Coordinate::from_human("e3".to_string()).unwrap()),
+            board.piece_at(coord!("e3")),
             &Some(Piece::pack(Side::Black, Rank::Bishop))
         );
         assert_eq!(
