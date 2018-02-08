@@ -4,6 +4,7 @@ use piece::{Piece, Rank};
 use Side;
 
 mod pawn;
+mod knight;
 
 pub fn apply_action(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
     match *action {
@@ -19,7 +20,7 @@ fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, board: &mut Boa
 
     match piece.rank() {
         Rank::Pawn => pawn::apply_move(piece, from, to, board, state),
-        Rank::Knight => unimplemented!(),
+        Rank::Knight => knight::apply_move(piece, from, to, board, state),
         Rank::Bishop => unimplemented!(),
         Rank::Rook => unimplemented!(),
         Rank::Queen => unimplemented!(),
@@ -38,8 +39,8 @@ fn apply_promotion(action: &Action, board: &mut Board, state: &mut GameState) ->
 
 pub struct Mover {
     side: Side,
-    current_row: usize,
-    current_column: usize
+    current_row: i8,
+    current_column: i8
 }
 
 impl Mover {
@@ -47,7 +48,7 @@ impl Mover {
         Mover { side: side, current_row: 0, current_column: 0}
     }
 
-    pub fn fw(&mut self) -> &Self {
+    pub fn fw(mut self) -> Self {
         match self.side {
             Side::White => self.current_row += 1,
             Side::Black => self.current_row -= 1,
@@ -56,7 +57,7 @@ impl Mover {
         self
     }
 
-    pub fn bw(&mut self) -> &Self {
+    pub fn bw(mut self) -> Self {
         match self.side {
             Side::White => self.current_row -= 1,
             Side::Black => self.current_row += 1,
@@ -65,7 +66,7 @@ impl Mover {
         self
     }
 
-    pub fn left(&mut self) -> &Self {
+    pub fn left(mut self) -> Self {
         match self.side {
             Side::White => self.current_column -= 1,
             Side::Black => self.current_column += 1,
@@ -74,7 +75,7 @@ impl Mover {
         self
     }
 
-    pub fn right(&mut self) -> &Self {
+    pub fn right(mut self) -> Self {
         match self.side {
             Side::White => self.current_column += 1,
             Side::Black => self.current_column -= 1,
@@ -83,14 +84,14 @@ impl Mover {
         self
     }
 
-    pub fn move_to(&mut self, coordinate: &Coordinate) -> &Self {
-        self.current_column = coordinate.column();
-        self.current_row = coordinate.row();
+    pub fn move_to(mut self, coordinate: &Coordinate) -> Self {
+        self.current_column = coordinate.column() as i8;
+        self.current_row = coordinate.row() as i8;
 
         self
     }
 
-    pub fn make(&self) -> Result<Coordinate, String> {
-        Coordinate::new_safe(self.current_row, self.current_column)
+    pub fn make(self) -> Result<Coordinate, String> {
+        Coordinate::new_safe(self.current_row as usize, self.current_column as usize)
     }
 }

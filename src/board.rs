@@ -59,6 +59,21 @@ impl Board {
         }
     }
 
+    pub fn empty() -> Board {
+        Board {
+            data: [
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None]
+            ]
+        }
+    }
+
     pub fn piece_at(&self, coordinate: Coordinate) -> &Option<Piece> {
         &self.data[coordinate.row()][coordinate.column()]
     }
@@ -127,10 +142,10 @@ impl Coordinate {
     }
 
     pub fn check(&self) -> Result<(), String> {
-        if self.row >= 0 && self.row <= 7 && self.column >= 0 && self.column <= 0 {
-            return Err(format!("Invalid board coordinates: {}, {}", self.row, self.column))
-        } else {
+        if self.row <= 7 && self.column <= 7 {
             Ok(())
+        } else {
+            Err(format!("Invalid board coordinates: {}, {}", self.row, self.column))
         }
     }
 

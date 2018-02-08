@@ -36,17 +36,12 @@ pub fn determine_valid_moves(
 
     // Moves forward
     let mut mover = Mover::new(side);
-    mover.move_to(from);
-    mover.fw();
-    moves.push(mover.make());
+    moves.push(mover.move_to(from).fw().make());
 
     if is_starting_coordinate(from, side) {
         // Moves forward twice
         let mut mover = Mover::new(side);
-        mover.move_to(from);
-        mover.fw();
-        mover.fw();
-        moves.push(mover.make());
+        moves.push(mover.move_to(from).fw().fw().make());
     }
 
     moves
@@ -76,6 +71,7 @@ mod tests {
         let mut state = GameState::new();
 
         let mut board = Board::default();
+
         let piece = board
             .piece_at(Coordinate::from_human("e2".to_string()).unwrap())
             .unwrap();
@@ -121,10 +117,10 @@ mod tests {
         let mut state = GameState::new();
 
         let mut board = Board::default();
-        board.update(
+        assert_eq!(board.update(
             &coord!("e3"),
             Some(Piece::pack(Side::Black, Rank::Bishop)),
-        ); // Bishop blocking on e3
+        ), Ok(())); // Bishop blocking on e3
 
         let piece = board.piece_at(coord!("e2")).unwrap();
         let from = coord!("e2");
@@ -132,7 +128,7 @@ mod tests {
 
         assert_eq!(
             apply_move(&piece, &from, &to, &mut board, &mut state),
-            Err(("Invalid move".to_string()))
+            Err("Invalid move".to_string())
         );
         assert_eq!(
             board.piece_at(coord!("e3")),
