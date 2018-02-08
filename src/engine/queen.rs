@@ -1,3 +1,4 @@
+
 use game::{Action, GameState};
 use board::{Board, Coordinate};
 use piece::{Piece, Rank};
@@ -11,7 +12,7 @@ pub fn apply_move(
     board: &mut Board,
     state: &mut GameState,
 ) -> Result<(), String> {
-    assert_eq!(piece.rank(), Rank::Rook);
+    assert_eq!(piece.rank(), Rank::Queen);
 
     let valid_moves = determine_valid_moves(from, board, state.next_to_move());
 
@@ -35,12 +36,20 @@ pub fn determine_valid_moves(
     let mut moves = vec![];
     // North
     moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw() )));
+    // North East
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw().right() )));
     // East
     moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.right() )));
+    // South East
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw().right() )));
     // South
     moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw() )));
+    // South West
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.bw().left() )));
     // West
     moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.left() )));
+    // North West
+    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.fw().left() )));
     moves
 }
 
@@ -53,28 +62,56 @@ mod tests {
     }
 
     #[test]
-    fn moves_in_straight_lines_until_it_hits_something() {
+    fn moves_in_straight_lines_and_diagonally_until_it_hits_something() {
         let mut state = GameState::new();
 
         let mut board = Board::empty();
-        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook)));
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Queen)));
         board.update(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))); // In the way
 
         let valid_moves = determine_valid_moves(&coord!("d4"), &board, Side::White);
 
         assert_eq!(valid_moves,vec![
+            // North
             coord!("d5"),
             coord!("d6"),
             coord!("d7"),
             coord!("d8"),
+
+            // North West
+            coord!("e5"),
+            coord!("f6"),
+            coord!("g7"),
+            coord!("h8"),
+
+            // West
             coord!("e4"),
             coord!("f4"),
+
+            // South West
+            coord!("e3"),
+            coord!("f2"),
+            coord!("g1"),
+
+            // South
             coord!("d3"),
             coord!("d2"),
             coord!("d1"),
+
+            // South East
+            coord!("c3"),
+            coord!("b2"),
+            coord!("a1"),
+
+            // East
             coord!("c4"),
             coord!("b4"),
             coord!("a4"),
+
+            // North East
+            coord!("c5"),
+            coord!("b6"),
+            coord!("a7"),
         ]);
     }
 }

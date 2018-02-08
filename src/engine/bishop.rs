@@ -11,7 +11,7 @@ pub fn apply_move(
     board: &mut Board,
     state: &mut GameState,
 ) -> Result<(), String> {
-    assert_eq!(piece.rank(), Rank::Knight);
+    assert_eq!(piece.rank(), Rank::Bishop);
 
     let valid_moves = determine_valid_moves(from, board, state.next_to_move());
 
