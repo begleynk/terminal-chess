@@ -10,35 +10,35 @@ mod rook;
 mod queen;
 mod king;
 
-pub fn apply_action(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
+pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String> {
     match *action {
-        Action::MovePiece(piece, from, to) => apply_move(&piece, &from, &to, board, state),
-        Action::Capture(_, _, _) => apply_capture(action, board, state),
-        Action::Promotion(_, _, _) => apply_promotion(action, board, state),
+        Action::MovePiece(piece, from, to) => apply_move(&piece, &from, &to, state),
+        Action::Capture(_, _, _) => apply_capture(action, state),
+        Action::Promotion(_, _, _) => apply_promotion(action, state),
     }
 }
 
-fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, board: &mut Board, state: &mut GameState) -> Result<(), String> {
+fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, state: &mut GameState) -> Result<(), String> {
     // Assert the "from" coordinate has the piece we are expecting
-    assert_eq!(board.piece_at(*from), &Some(*piece));
+    assert_eq!(state.board().piece_at(*from), &Some(*piece));
 
     match piece.rank() {
-        Rank::Pawn => pawn::apply_move(piece, from, to, board, state),
-        Rank::Knight => knight::apply_move(piece, from, to, board, state),
-        Rank::Bishop => bishop::apply_move(piece, from, to, board, state),
-        Rank::Rook => rook::apply_move(piece, from, to, board, state),
-        Rank::Queen => queen::apply_move(piece, from, to, board, state),
-        Rank::King => king::apply_move(piece, from, to, board, state)
+        Rank::Pawn => pawn::apply_move(piece, from, to, state),
+        Rank::Knight => knight::apply_move(piece, from, to, state),
+        Rank::Bishop => bishop::apply_move(piece, from, to, state),
+        Rank::Rook => rook::apply_move(piece, from, to, state),
+        Rank::Queen => queen::apply_move(piece, from, to, state),
+        Rank::King => king::apply_move(piece, from, to, state)
     }
 }
 
 #[allow(unused_variables)]
-fn apply_capture(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
+fn apply_capture(action: &Action, state: &mut GameState) -> Result<(), String> {
     unimplemented!()
 }
 
 #[allow(unused_variables)]
-fn apply_promotion(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
+fn apply_promotion(action: &Action, state: &mut GameState) -> Result<(), String> {
     unimplemented!()
 }
 

@@ -1,22 +1,20 @@
 use game::{Action, GameState};
-use board::{Board, Coordinate};
+use board::{Coordinate};
 use piece::{Piece, Rank};
-use Side;
 use engine::Mover;
 
 pub fn apply_move(
     piece: &Piece,
     from: &Coordinate,
     to: &Coordinate,
-    board: &mut Board,
     state: &mut GameState,
 ) -> Result<(), String> {
     assert_eq!(piece.rank(), Rank::Knight);
 
-    let valid_moves = determine_valid_moves(from, board, state.next_to_move());
+    let valid_moves = determine_valid_moves(from, state);
 
     if valid_moves.contains(to) {
-        board.update(to, Some(piece.clone())).expect("Bad move found. Bug");
+        state.update_board(to, Some(piece.clone())).expect("Bad move found. Bug");
         state.add_action_to_history(Action::MovePiece(piece.clone(), from.clone(), to.clone()));
         state.toggle_side();
 
@@ -28,10 +26,10 @@ pub fn apply_move(
 
 pub fn determine_valid_moves(
     from: &Coordinate,
-    board: &Board,
-    side: Side,
+    state: &GameState
 ) -> Vec<Coordinate> {
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
+    let side = state.next_to_move();
 
     // North moves
     moves.push(Mover::new(side).move_to(from).north().north().west().make());
@@ -49,13 +47,15 @@ pub fn determine_valid_moves(
     moves
         .into_iter()
         .filter_map(|m| m.ok()) // Filter valid coordinates
-        .filter(|c| board.is_empty(*c)) // Filter moves to positions that are taken
+        .filter(|c| state.board().is_empty(*c)) // Filter moves to positions that are taken
         .collect()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use board::Board;
+    use Side;
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
@@ -64,21 +64,21 @@ mod tests {
     #[test]
     fn in_a_shocking_turn_of_events_moves_like_a_knight() {
         let mut state = GameState::new();
+        state.set_board(Board::empty());
 
-        let mut board = Board::empty();
-        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
+        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
 
-        let piece = board.piece_at(coord!("d4")).unwrap();
+        let piece = state.board().piece_at(coord!("d4")).unwrap();
 
         let from = Coordinate::from_human("d4".to_string()).unwrap();
         let to = Coordinate::from_human("e6".to_string()).unwrap();
 
         assert_eq!(
-            apply_move(&piece, &from, &to, &mut board, &mut state),
+            apply_move(&piece, &from, &to, &mut state),
             Ok(())
         );
         assert_eq!(
-            board.piece_at(coord!("e6")),
+            state.board().piece_at(coord!("e6")),
             &Some(piece)
         );
         assert_eq!(state.history().len(), 1, "History not updated");
@@ -88,18 +88,18 @@ mod tests {
     #[test]
     fn cannot_move_to_taken_squares() {
         let mut state = GameState::new();
+        state.set_board(Board::empty());
 
-        let mut board = Board::empty();
-        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
-        board.update(&coord!("e6"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
+        state.update_board(&coord!("e6"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
 
-        let piece = board.piece_at(coord!("d4")).unwrap();
+        let piece = state.board().piece_at(coord!("d4")).unwrap();
 
         let from = Coordinate::from_human("d4".to_string()).unwrap();
         let to = Coordinate::from_human("e6".to_string()).unwrap();
 
         assert_eq!(
-            apply_move(&piece, &from, &to, &mut board, &mut state),
+            apply_move(&piece, &from, &to, &mut state),
             Err("Invalid move".to_string())
         );
         assert_eq!(state.history().len(), 0, "History updated");
@@ -108,13 +108,14 @@ mod tests {
 
     #[test]
     fn cannot_jump_off_the_board() {
-        let mut board = Board::empty();
-        assert_eq!(board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight))), Ok(()));
+        let mut state = GameState::new();
+        state.set_board(Board::empty());
+
+        assert_eq!(state.update_board(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight))), Ok(()));
 
         let valid_moves = determine_valid_moves(
             &coord!("a1"),
-            &board,
-            Side::White
+            &state
         );
 
         assert_eq!(valid_moves, vec![

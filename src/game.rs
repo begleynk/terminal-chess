@@ -14,6 +14,7 @@ pub enum Action {
 pub struct GameState {
     next_to_move: Side,
     history: Vec<Action>,
+    board: Board
 }
 
 #[allow(dead_code)] // TODO: Remove
@@ -21,7 +22,8 @@ impl GameState {
     pub fn new() -> GameState {
         GameState {
             next_to_move: Side::White,
-            history: vec![]
+            history: vec![],
+            board: Board::default()
         }
     }
 
@@ -37,6 +39,18 @@ impl GameState {
         self.history.push(action);
     }
 
+    pub fn board(&self) -> &Board {
+        &self.board
+    }
+
+    pub fn update_board(&mut self, coordinate: &Coordinate, piece: Option<Piece>) -> Result<(), String> {
+       self.board.update(coordinate, piece) 
+    }
+
+    pub fn set_board(&mut self, board: Board) {
+        self.board = board;
+    }
+
     pub fn toggle_side(&mut self) {
         match self.next_to_move {
             Side::White => self.next_to_move = Side::Black,
@@ -47,7 +61,6 @@ impl GameState {
 
 #[derive(PartialEq)]
 pub struct Game {
-    board: Board,
     current_state: GameState,
 }
 
@@ -56,7 +69,6 @@ impl Game {
     fn new() -> Game {
         Game {
             current_state: GameState::new(),
-            board: Board::default(),
         }
     }
 
@@ -69,11 +81,11 @@ impl Game {
     }
 
     fn board(&self) -> &Board {
-        &self.board
+        &self.current_state.board()
     }
 
     fn advance(&mut self, action: Action) -> Result<(), String> {
-        engine::apply_action(&action, &mut self.board, &mut self.current_state)?;
+        engine::apply_action(&action, &mut self.current_state)?;
 
         Ok(())
     }

@@ -2,7 +2,7 @@ use piece::{Piece, Rank};
 use Side;
 use fmt;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Board {
     pub data: [[Option<Piece>; 8]; 8],
 }

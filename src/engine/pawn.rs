@@ -1,5 +1,5 @@
 use game::{Action, GameState};
-use board::{Board, Coordinate};
+use board::{Coordinate};
 use piece::{Piece, Rank};
 use Side;
 use engine::Mover;
@@ -8,15 +8,14 @@ pub fn apply_move(
     piece: &Piece,
     from: &Coordinate,
     to: &Coordinate,
-    board: &mut Board,
     state: &mut GameState,
 ) -> Result<(), String> {
     assert_eq!(piece.rank(), Rank::Pawn);
 
-    let valid_moves = determine_valid_moves(from, board, state.next_to_move());
+    let valid_moves = determine_valid_moves(from, state);
 
     if valid_moves.contains(to) {
-        board.update(to, Some(piece.clone())).expect("Bad move found. Bug");
+        state.update_board(to, Some(piece.clone())).expect("Bad move found. Bug");
         state.add_action_to_history(Action::MovePiece(piece.clone(), from.clone(), to.clone()));
         state.toggle_side();
 
@@ -28,23 +27,22 @@ pub fn apply_move(
 
 pub fn determine_valid_moves(
     from: &Coordinate,
-    board: &Board,
-    side: Side,
+    state: &GameState
 ) -> Vec<Coordinate> {
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
 
     // Moves forward
-    moves.push(Mover::new(side).move_to(from).north().make());
+    moves.push(Mover::new(state.next_to_move()).move_to(from).north().make());
 
-    if is_starting_coordinate(from, side) {
+    if is_starting_coordinate(from, state.next_to_move()) {
         // Moves forward twice
-        moves.push(Mover::new(side).move_to(from).north().north().make());
+        moves.push(Mover::new(state.next_to_move()).move_to(from).north().north().make());
     }
 
     moves
         .into_iter()
         .filter_map(|m| m.ok()) // Filter valid coordinates
-        .filter(|c| board.is_empty(*c)) // Filter moves to positions that are taken
+        .filter(|c| state.board().is_empty(*c)) // Filter moves to positions that are taken
         .collect()
 }
 
@@ -67,20 +65,18 @@ mod tests {
     fn can_move_pawns_one_step_ahead() {
         let mut state = GameState::new();
 
-        let mut board = Board::default();
-
-        let piece = board
+        let piece = state.board()
             .piece_at(coord!("e2"))
             .unwrap();
         let from = coord!("e2");
         let to = coord!("e3");
 
         assert_eq!(
-            apply_move(&piece, &from, &to, &mut board, &mut state),
+            apply_move(&piece, &from, &to, &mut state),
             Ok(())
         );
         assert_eq!(
-            board.piece_at(coord!("e3")),
+            state.board().piece_at(coord!("e3")),
             &Some(piece)
         );
         assert_eq!(state.history().len(), 1, "History not updated");
@@ -91,19 +87,18 @@ mod tests {
     fn can_move_pawns_two_step_ahead() {
         let mut state = GameState::new();
 
-        let mut board = Board::default();
-        let piece = board
+        let piece = state.board()
             .piece_at(coord!("e2"))
             .unwrap();
         let from = coord!("e2");
         let to = coord!("e4");
 
         assert_eq!(
-            apply_move(&piece, &from, &to, &mut board, &mut state),
+            apply_move(&piece, &from, &to, &mut state),
             Ok(())
         );
         assert_eq!(
-            board.piece_at(coord!("e4")),
+            state.board().piece_at(coord!("e4")),
             &Some(piece)
         );
         assert_eq!(state.history().len(), 1, "History not updated");
@@ -113,22 +108,21 @@ mod tests {
     fn cannot_move_ahead_if_the_pawn_is_blocked() {
         let mut state = GameState::new();
 
-        let mut board = Board::default();
-        assert_eq!(board.update(
+        assert_eq!(state.update_board(
             &coord!("e3"),
             Some(Piece::pack(Side::Black, Rank::Bishop)),
         ), Ok(())); // Bishop blocking on e3
 
-        let piece = board.piece_at(coord!("e2")).unwrap();
+        let piece = state.board().piece_at(coord!("e2")).unwrap();
         let from = coord!("e2");
         let to = coord!("e3");
 
         assert_eq!(
-            apply_move(&piece, &from, &to, &mut board, &mut state),
+            apply_move(&piece, &from, &to, &mut state),
             Err("Invalid move".to_string())
         );
         assert_eq!(
-            board.piece_at(coord!("e3")),
+            state.board().piece_at(coord!("e3")),
             &Some(Piece::pack(Side::Black, Rank::Bishop))
         );
         assert_eq!(
@@ -142,24 +136,22 @@ mod tests {
     fn cannot_move_two_places_if_not_on_starting_row() {
         let mut state = GameState::new();
 
-        let mut board = Board::default();
-
         // Move pawn to e3
-        assert_eq!(apply_move(&board.piece_at(coord!("e2")).unwrap(), &coord!("e2"), &coord!("e3"), &mut board, &mut state), Ok(()));
+        assert_eq!(apply_move(&state.board().piece_at(coord!("e2")).unwrap(), &coord!("e2"), &coord!("e3"), &mut state), Ok(()));
         // Random black move
-        assert_eq!(apply_move(&board.piece_at(coord!("b7")).unwrap(), &coord!("b7"), &coord!("b6"), &mut board, &mut state), Ok(()));
+        assert_eq!(apply_move(&state.board().piece_at(coord!("b7")).unwrap(), &coord!("b7"), &coord!("b6"), &mut state), Ok(()));
 
         // Try to move e3 to e5
-        let piece = board.piece_at(coord!("e3")).unwrap();
+        let piece = state.board().piece_at(coord!("e3")).unwrap();
         let from = coord!("e3");
         let to = coord!("e5");
 
         assert_eq!(
-            apply_move(&piece, &from, &to, &mut board, &mut state),
+            apply_move(&piece, &from, &to, &mut state),
             Err("Invalid move".to_string())
         );
         assert_eq!(
-            board.piece_at(coord!("e4")),
+            state.board().piece_at(coord!("e4")),
             &None
         );
         assert_eq!(
