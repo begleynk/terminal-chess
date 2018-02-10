@@ -8,6 +8,7 @@ mod knight;
 mod bishop;
 mod rook;
 mod queen;
+mod king;
 
 pub fn apply_action(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
     match *action {
@@ -27,7 +28,7 @@ fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, board: &mut Boa
         Rank::Bishop => bishop::apply_move(piece, from, to, board, state),
         Rank::Rook => rook::apply_move(piece, from, to, board, state),
         Rank::Queen => queen::apply_move(piece, from, to, board, state),
-        Rank::King => unimplemented!(),
+        Rank::King => king::apply_move(piece, from, to, board, state)
     }
 }
 
