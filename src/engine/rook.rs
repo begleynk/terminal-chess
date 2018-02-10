@@ -2,7 +2,7 @@ use game::{Action, GameState};
 use board::{Board, Coordinate};
 use piece::{Piece, Rank};
 use Side;
-use engine::{Mover, find_moves_in_direction};
+use engine::{find_moves_in_direction};
 
 pub fn apply_move(
     piece: &Piece,
@@ -34,13 +34,13 @@ pub fn determine_valid_moves(
 
     let mut moves = vec![];
     // North
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.north()));
     // East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.east() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.east()));
     // South
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.south()));
     // West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.west() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.west()));
     moves
 }
 
@@ -54,11 +54,9 @@ mod tests {
 
     #[test]
     fn moves_in_straight_lines_until_it_hits_something() {
-        let mut state = GameState::new();
-
         let mut board = Board::empty();
-        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook)));
-        board.update(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))); // In the way
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        board.update(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way
 
         let valid_moves = determine_valid_moves(&coord!("d4"), &board, Side::White);
 

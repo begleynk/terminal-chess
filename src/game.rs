@@ -1,6 +1,5 @@
-use piece::{Piece, Rank};
+use piece::{Piece};
 use Side;
-use std::fmt;
 use board::{Board, Coordinate};
 use engine;
 
@@ -17,6 +16,7 @@ pub struct GameState {
     history: Vec<Action>,
 }
 
+#[allow(dead_code)] // TODO: Remove
 impl GameState {
     pub fn new() -> GameState {
         GameState {
@@ -51,6 +51,7 @@ pub struct Game {
     current_state: GameState,
 }
 
+#[allow(dead_code)] // TODO: Remove
 impl Game {
     fn new() -> Game {
         Game {
@@ -81,10 +82,11 @@ impl Game {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use piece::Rank;
 
     #[test]
     fn it_initializes_the_game() {
-        let mut game = Game::new();
+        let game = Game::new();
 
         assert_eq!(game.history().len(), 0);
         assert_eq!(game.current_turn(), Side::White);
@@ -109,6 +111,7 @@ mod tests {
     }
 
     //#[test] TODO: Enable eventually
+    #[allow(dead_code)]
     fn game_updates_its_state_with_moves() {
         let mut game = Game::new();
         let action = Action::MovePiece(
@@ -117,14 +120,14 @@ mod tests {
             Coordinate::from_human("a4".to_owned()).unwrap(),
         );
 
-        game.advance(action.clone());
+        game.advance(action.clone()).unwrap();
 
         assert_eq!(game.history(), &vec![action]);
         assert_eq!(game.current_turn(), Side::Black);
 
         let mut expected_board = Board::default();
-        expected_board.update(&Coordinate::new(1,1), None);
-        expected_board.update(&Coordinate::new(1,3), Some(Piece::pack(Side::White, Rank::Pawn)));
+        expected_board.update(&Coordinate::new(1,1), None).unwrap();
+        expected_board.update(&Coordinate::new(1,3), Some(Piece::pack(Side::White, Rank::Pawn))).unwrap();
 
         assert_eq!(*game.board(), expected_board);
     }

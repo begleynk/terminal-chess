@@ -31,10 +31,12 @@ fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, board: &mut Boa
     }
 }
 
+#[allow(unused_variables)]
 fn apply_capture(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
     unimplemented!()
 }
 
+#[allow(unused_variables)]
 fn apply_promotion(action: &Action, board: &mut Board, state: &mut GameState) -> Result<(), String> {
     unimplemented!()
 }

@@ -2,7 +2,7 @@ use game::{Action, GameState};
 use board::{Board, Coordinate};
 use piece::{Piece, Rank};
 use Side;
-use engine::{Mover, find_moves_in_direction};
+use engine::{find_moves_in_direction};
 
 pub fn apply_move(
     piece: &Piece,
@@ -34,13 +34,13 @@ pub fn determine_valid_moves(
 
     let mut moves = vec![];
     // North East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north().east() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.north().east()));
     // South East
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south().east() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.south().east()));
     // South West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.south().west() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.south().west()));
     // North West
-    moves.append(&mut find_moves_in_direction(from, side, board,(|mover| mover.north().west() )));
+    moves.append(&mut find_moves_in_direction(from, side, board,|mover| mover.north().west()));
     moves
 
 }
@@ -55,11 +55,9 @@ mod tests {
 
     #[test]
     fn moves_north_east_until_it_hits_something() {
-        let mut state = GameState::new();
-
         let mut board = Board::empty();
-        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Bishop)));
-        board.update(&coord!("g7"), Some(Piece::pack(Side::White, Rank::Bishop)));
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
+        board.update(&coord!("g7"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
 
         let valid_moves = determine_valid_moves(&coord!("a1"), &board, Side::White);
 
@@ -74,11 +72,9 @@ mod tests {
 
     #[test]
     fn moves_south_east_until_it_hits_something() {
-        let mut state = GameState::new();
-
         let mut board = Board::empty();
-        board.update(&coord!("a8"), Some(Piece::pack(Side::White, Rank::Bishop)));
-        board.update(&coord!("g2"), Some(Piece::pack(Side::White, Rank::Bishop)));
+        board.update(&coord!("a8"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
+        board.update(&coord!("g2"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
 
         let valid_moves = determine_valid_moves(&coord!("a8"), &board, Side::White);
 
@@ -93,11 +89,9 @@ mod tests {
 
     #[test]
     fn moves_south_west_until_it_hits_something() {
-        let mut state = GameState::new();
-
         let mut board = Board::empty();
-        board.update(&coord!("h8"), Some(Piece::pack(Side::White, Rank::Bishop)));
-        board.update(&coord!("f6"), Some(Piece::pack(Side::White, Rank::Bishop)));
+        board.update(&coord!("h8"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
+        board.update(&coord!("f6"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
 
         let valid_moves = determine_valid_moves(&coord!("h8"), &board, Side::White);
 
@@ -108,10 +102,8 @@ mod tests {
 
     #[test]
     fn moves_north_west_until_it_hits_something() {
-        let mut state = GameState::new();
-
         let mut board = Board::empty();
-        board.update(&coord!("h1"), Some(Piece::pack(Side::White, Rank::Bishop)));
+        board.update(&coord!("h1"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
 
         let valid_moves = determine_valid_moves(&coord!("h1"), &board, Side::White);
 

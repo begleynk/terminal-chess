@@ -66,7 +66,7 @@ mod tests {
         let mut state = GameState::new();
 
         let mut board = Board::empty();
-        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight)));
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
 
         let piece = board.piece_at(coord!("d4")).unwrap();
 
@@ -90,8 +90,8 @@ mod tests {
         let mut state = GameState::new();
 
         let mut board = Board::empty();
-        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight)));
-        board.update(&coord!("e6"), Some(Piece::pack(Side::White, Rank::Rook)));
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
+        board.update(&coord!("e6"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
 
         let piece = board.piece_at(coord!("d4")).unwrap();
 
@@ -108,8 +108,6 @@ mod tests {
 
     #[test]
     fn cannot_jump_off_the_board() {
-        let mut state = GameState::new();
-
         let mut board = Board::empty();
         assert_eq!(board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight))), Ok(()));
 

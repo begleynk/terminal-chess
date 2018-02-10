@@ -34,13 +34,11 @@ pub fn determine_valid_moves(
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
 
     // Moves forward
-    let mut mover = Mover::new(side);
-    moves.push(mover.move_to(from).north().make());
+    moves.push(Mover::new(side).move_to(from).north().make());
 
     if is_starting_coordinate(from, side) {
         // Moves forward twice
-        let mut mover = Mover::new(side);
-        moves.push(mover.move_to(from).north().north().make());
+        moves.push(Mover::new(side).move_to(from).north().north().make());
     }
 
     moves
@@ -158,7 +156,7 @@ mod tests {
 
         assert_eq!(
             apply_move(&piece, &from, &to, &mut board, &mut state),
-            Err(("Invalid move".to_string()))
+            Err("Invalid move".to_string())
         );
         assert_eq!(
             board.piece_at(coord!("e4")),
