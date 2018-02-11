@@ -14,7 +14,7 @@ pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String
     match *action {
         Action::MovePiece(piece, from, to) => apply_move(&piece, &from, &to, state),
         Action::Capture(capturer, target, from, to) => unimplemented!(),
-        Action::Promotion(_, _, _, _) => unimplemented!()
+        Action::Promotion(_, _, _, _) => unimplemented!(),
     }
 }
 
@@ -67,13 +67,14 @@ pub fn xx_apply_action(action: &Action, state: &mut GameState) -> Result<(), Str
             }
         }
         Action::Capture(capturer, target, from, to) => {
-            let possible_captures: Vec<Action> = possible_actions_for_piece(&capturer, &from, &state)
-                .into_iter()
-                .filter(|a| match *a {
-                    Action::Capture(_, _, _, _) => true,
-                    _ => false,
-                })
-                .collect();
+            let possible_captures: Vec<Action> =
+                possible_actions_for_piece(&capturer, &from, &state)
+                    .into_iter()
+                    .filter(|a| match *a {
+                        Action::Capture(_, _, _, _) => true,
+                        _ => false,
+                    })
+                    .collect();
 
             if let Some(_) = possible_captures
                 .into_iter()
@@ -82,7 +83,9 @@ pub fn xx_apply_action(action: &Action, state: &mut GameState) -> Result<(), Str
                 state
                     .update_board(&to, Some(capturer.clone()))
                     .expect("Bad move found. Bug");
-                state.update_board(&from, None).expect("Bad move found. Bug");
+                state
+                    .update_board(&from, None)
+                    .expect("Bad move found. Bug");
                 state.add_piece_to_capture_list(target.clone());
                 state.add_action_to_history(Action::Capture(
                     capturer.clone(),
@@ -216,4 +219,37 @@ where
         }
     }
     accumulator
+}
+
+fn find_opposing_piece_in_direction<F>(
+    starting_coordinate: &Coordinate,
+    side: Side,
+    board: &Board,
+    closure: F,
+) -> Option<Coordinate>
+where
+    F: Fn(Mover) -> Mover,
+{
+    let mut current_coord = starting_coordinate.clone();
+    let mut result = None;
+    for _ in 0..7 {
+        let mut mover = Mover::new(side).move_to(&current_coord);
+        mover = closure(mover);
+
+        if let Ok(next) = mover.make() {
+            if let &Some(piece) = board.piece_at(next) {
+                if piece.side() != side {
+                    result = Some(next);
+                    break;
+                } else {
+                    break;
+                }
+            }
+            current_coord = next;
+        } else {
+            result = None;
+        }
+    }
+
+    result
 }
