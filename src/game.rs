@@ -7,13 +7,7 @@ use engine;
 pub enum Action {
     MovePiece(Piece, Coordinate, Coordinate),
     Capture(Piece, Piece, Coordinate, Coordinate),
-    Promotion(Piece, Piece, CastleSide),
-}
-
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum CastleSide {
-    QueenSide,
-    KingSide
+    Promotion(Piece, Piece, Coordinate, Coordinate),
 }
 
 #[derive(PartialEq, Clone, Debug)]
