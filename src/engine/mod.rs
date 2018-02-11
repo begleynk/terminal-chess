@@ -29,7 +29,7 @@ fn apply_move(
 
     match piece.rank() {
         Rank::Pawn => unimplemented!(),
-        Rank::Knight => knight::apply_move(piece, from, to, state),
+        Rank::Knight => unimplemented!(),
         Rank::Bishop => bishop::apply_move(piece, from, to, state),
         Rank::Rook => rook::apply_move(piece, from, to, state),
         Rank::Queen => queen::apply_move(piece, from, to, state),
@@ -108,7 +108,7 @@ pub fn possible_actions_for_piece(
 ) -> Vec<Action> {
     match piece.rank() {
         Rank::Pawn => pawn::possible_actions(from, state),
-        Rank::Knight => unimplemented!(),
+        Rank::Knight => knight::possible_actions(from, state),
         Rank::Bishop => unimplemented!(),
         Rank::Rook => unimplemented!(),
         Rank::Queen => unimplemented!(),
