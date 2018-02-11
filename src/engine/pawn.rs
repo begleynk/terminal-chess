@@ -25,6 +25,28 @@ pub fn apply_move(
     }
 }
 
+pub fn apply_capture(
+    capturer: &Piece,
+    target: &Piece,
+    from: &Coordinate,
+    to: &Coordinate,
+    state: &mut GameState,
+) -> Result<(), String> {
+    let valid_moves = determine_valid_captures(from, state);
+
+    if valid_moves.contains(to) {
+        state.update_board(to, Some(capturer.clone())).expect("Bad move found. Bug");
+        state.update_board(from, None).expect("Bad move found. Bug");
+        state.add_piece_to_capture_list(target.clone());
+        state.add_action_to_history(Action::Capture(capturer.clone(), target.clone(), from.clone(), to.clone()));
+        state.toggle_side();
+
+        Ok(())
+    } else {
+        Err("Invalid capture".to_string())
+    }
+}
+
 pub fn determine_valid_moves(
     from: &Coordinate,
     state: &GameState
@@ -46,6 +68,24 @@ pub fn determine_valid_moves(
         .collect()
 }
 
+pub fn determine_valid_captures(from: &Coordinate, state: &GameState) -> Vec<Coordinate> {
+
+    let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
+
+    moves.push(Mover::new(state.next_to_move()).move_to(from).north().east().make());
+    moves.push(Mover::new(state.next_to_move()).move_to(from).north().west().make());
+    // TODO: Ampasant
+
+    moves
+    .into_iter()
+    .filter_map(|c| c.ok() )
+    .filter(|c| match *state.piece_at(*c) {
+        Some(p) => p.side() != state.piece_at(*from).unwrap().side(),
+        None => false
+    })
+    .collect()
+}
+
 fn is_starting_coordinate(coordinate: &Coordinate, side: Side) -> bool {
     match side {
         Side::White => coordinate.row() == 1,
@@ -56,6 +96,7 @@ fn is_starting_coordinate(coordinate: &Coordinate, side: Side) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use board::Board;
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
@@ -159,5 +200,49 @@ mod tests {
             2,
             "History updated when it should not have"
         );
+    }
+
+    #[test]
+    fn can_capture_diagonally() {
+        let mut state = GameState::new();
+        state.set_board(Board::empty());
+
+        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn))).unwrap();
+        state.update_board(&coord!("e5"), Some(Piece::pack(Side::Black, Rank::Knight))).unwrap(); // In the way
+
+        assert_eq!(apply_capture(
+            &Piece::pack(Side::White, Rank::Pawn),
+            &Piece::pack(Side::Black, Rank::Knight),
+            &coord!("d4"),
+            &coord!("e5"),
+            &mut state
+        ), Ok(()));
+
+        assert_eq!(state.piece_at(coord!("e5")), &Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(state.piece_at(coord!("d4")), &None);
+        assert_eq!(state.history().len(), 1);
+        assert_eq!(state.captures(), &vec![Piece::pack(Side::Black, Rank::Knight)])
+    }
+
+    #[test]
+    fn finds_correct_captures() {
+        let mut state = GameState::new();
+        state.set_board(Board::empty());
+
+        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn))).unwrap();
+        state.update_board(&coord!("e5"), Some(Piece::pack(Side::Black, Rank::Knight))).unwrap(); // In the way
+
+        let captures = determine_valid_captures(&coord!("d4"), &state);
+
+        assert_eq!(captures, vec![coord!("e5")]);
+
+        // assert_eq!(captures, vec![
+        //     Action::Capture(
+        //         Piece::pack(Side::White, Rank::Pawn),
+        //         Piece::pack(Side::Black, Rank::Knight),
+        //         coord!("d4"),
+        //         coord!("d5")
+        //     )
+        // ])
     }
 }

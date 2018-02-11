@@ -13,14 +13,14 @@ mod king;
 pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String> {
     match *action {
         Action::MovePiece(piece, from, to) => apply_move(&piece, &from, &to, state),
-        Action::Capture(_, _, _) => apply_capture(action, state),
+        Action::Capture(capturer, target, from, to) => apply_capture(&capturer, &target, &from, &to, state),
         Action::Promotion(_, _, _) => apply_promotion(action, state),
     }
 }
 
 fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, state: &mut GameState) -> Result<(), String> {
     // Assert the "from" coordinate has the piece we are expecting
-    assert_eq!(state.board().piece_at(*from), &Some(*piece));
+    assert_eq!(state.piece_at(*from), &Some(*piece));
 
     match piece.rank() {
         Rank::Pawn => pawn::apply_move(piece, from, to, state),
@@ -33,8 +33,17 @@ fn apply_move(piece: &Piece, from: &Coordinate, to: &Coordinate, state: &mut Gam
 }
 
 #[allow(unused_variables)]
-fn apply_capture(action: &Action, state: &mut GameState) -> Result<(), String> {
-    unimplemented!()
+fn apply_capture(capturer: &Piece, target: &Piece, from: &Coordinate, to: &Coordinate, state: &mut GameState) -> Result<(), String> {
+    assert_eq!(state.piece_at(*from), &Some(*capturer));
+
+    match capturer.rank() {
+        Rank::Pawn => pawn::apply_capture(capturer, target, from, to, state),
+        Rank::Knight => unimplemented!(),
+        Rank::Bishop => unimplemented!(),
+        Rank::Rook => unimplemented!(),
+        Rank::Queen => unimplemented!(),
+        Rank::King => unimplemented!(),
+    }
 }
 
 #[allow(unused_variables)]

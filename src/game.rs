@@ -6,15 +6,22 @@ use engine;
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Action {
     MovePiece(Piece, Coordinate, Coordinate),
-    Capture(Piece, Piece, Coordinate),
-    Promotion(Piece, Piece, Coordinate),
+    Capture(Piece, Piece, Coordinate, Coordinate),
+    Promotion(Piece, Piece, CastleSide),
+}
+
+#[derive(PartialEq, Clone, Copy, Debug)]
+pub enum CastleSide {
+    QueenSide,
+    KingSide
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct GameState {
     next_to_move: Side,
     history: Vec<Action>,
-    board: Board
+    board: Board,
+    captures: Vec<Piece>
 }
 
 #[allow(dead_code)] // TODO: Remove
@@ -23,7 +30,8 @@ impl GameState {
         GameState {
             next_to_move: Side::White,
             history: vec![],
-            board: Board::default()
+            board: Board::default(),
+            captures: vec![]
         }
     }
 
@@ -39,8 +47,20 @@ impl GameState {
         self.history.push(action);
     }
 
+    pub fn add_piece_to_capture_list(&mut self, piece: Piece) {
+        self.captures.push(piece);
+    }
+
     pub fn board(&self) -> &Board {
         &self.board
+    }
+
+    pub fn captures(&self) -> &Vec<Piece> {
+        &self.captures
+    }
+
+    pub fn piece_at(&self, coord: Coordinate) -> &Option<Piece> {
+        &self.board.piece_at(coord)
     }
 
     pub fn update_board(&mut self, coordinate: &Coordinate, piece: Option<Piece>) -> Result<(), String> {
