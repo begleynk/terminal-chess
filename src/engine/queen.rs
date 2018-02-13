@@ -1,34 +1,18 @@
 use game::{Action, GameState};
 use board::{Coordinate};
 use piece::{Piece, Rank};
-use engine::{find_moves_in_direction};
+use engine::{find_moves_in_direction, find_opposing_piece_in_direction};
 
-pub fn apply_move(
-    piece: &Piece,
-    from: &Coordinate,
-    to: &Coordinate,
-    state: &mut GameState,
-) -> Result<(), String> {
-    assert_eq!(piece.rank(), Rank::Queen);
 
-    let valid_moves = determine_valid_moves(from, state);
+pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
+    let mut actions = vec![];
+    actions.append(&mut possible_moves(from, state));
+    actions.append(&mut possible_captures(from, state));
 
-    if valid_moves.contains(to) {
-        state.update_board(to, Some(piece.clone())).expect("Bad move found. Bug");
-        state.add_action_to_history(Action::MovePiece(piece.clone(), from.clone(), to.clone()));
-        state.toggle_side();
-
-        Ok(())
-    } else {
-        Err("Invalid move".to_string())
-    }
+    actions
 }
 
-pub fn determine_valid_moves(
-    from: &Coordinate,
-    state: &GameState,
-) -> Vec<Coordinate> {
-
+pub fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let side = state.next_to_move();
     let mut moves = vec![];
     // North
@@ -47,7 +31,42 @@ pub fn determine_valid_moves(
     moves.append(&mut find_moves_in_direction(from, side, state.board(),|mover| mover.west()));
     // North West
     moves.append(&mut find_moves_in_direction(from, side, state.board(),|mover| mover.north().west()));
+
     moves
+        .into_iter()
+        .map(|c| {
+            Action::MovePiece(state.piece_at(*from).unwrap().clone(), from.clone(), c)
+        })
+        .collect()
+}
+
+pub fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
+    let side = state.next_to_move();
+    let mut moves = vec![];
+    // North
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.north()));
+    // North East
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.north().east()));
+    // East
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.east()));
+    // South East
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.south().east()));
+    // South
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.south()));
+    // South West
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.south().west()));
+    // West
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.west()));
+    // North West
+    moves.push(find_opposing_piece_in_direction(from, side, state.board(),|mover| mover.north().west()));
+
+    moves
+        .into_iter()
+        .filter_map(|c| c )
+        .map(|c| {
+            Action::Capture(state.piece_at(*from).unwrap().clone(), state.piece_at(c).unwrap().clone(), from.clone(), c)
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -68,49 +87,100 @@ mod tests {
         state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Queen))).unwrap();
         state.update_board(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way
 
-        let valid_moves = determine_valid_moves(&coord!("d4"), &state);
+        let valid_moves = possible_moves(&coord!("d4"), &state);
 
         assert_eq!(valid_moves,vec![
             // North
-            coord!("d5"),
-            coord!("d6"),
-            coord!("d7"),
-            coord!("d8"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d5")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d6")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d7")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d8")),
 
             // North West
-            coord!("e5"),
-            coord!("f6"),
-            coord!("g7"),
-            coord!("h8"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("e5")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("f6")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("g7")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("h8")),
 
             // West
-            coord!("e4"),
-            coord!("f4"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("e4")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("f4")),
 
             // South West
-            coord!("e3"),
-            coord!("f2"),
-            coord!("g1"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("e3")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("f2")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("g1")),
 
             // South
-            coord!("d3"),
-            coord!("d2"),
-            coord!("d1"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d3")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d2")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("d1")),
 
             // South East
-            coord!("c3"),
-            coord!("b2"),
-            coord!("a1"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("c3")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("b2")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("a1")),
 
             // East
-            coord!("c4"),
-            coord!("b4"),
-            coord!("a4"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("c4")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("b4")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("a4")),
 
             // North East
-            coord!("c5"),
-            coord!("b6"),
-            coord!("a7"),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("c5")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("b6")),
+            Action::MovePiece(Piece::pack(Side::White, Rank::Queen), coord!("d4"), coord!("a7")),
         ]);
+    }
+
+    #[test]
+    fn captures_in_straight_lines_and_diagonally() {
+        let mut state = GameState::new();
+        state.set_board(Board::empty());
+
+        state
+            .update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Queen)))
+            .unwrap();
+        state
+            .update_board(&coord!("g7"), Some(Piece::pack(Side::Black, Rank::Pawn)))
+            .unwrap();
+        state
+            .update_board(&coord!("b6"), Some(Piece::pack(Side::Black, Rank::Pawn)))
+            .unwrap();
+        state
+            .update_board(&coord!("c3"), Some(Piece::pack(Side::White, Rank::Pawn)))
+            .unwrap();
+        state
+            .update_board(&coord!("b2"), Some(Piece::pack(Side::Black, Rank::Pawn)))
+            .unwrap();
+        state
+            .update_board(&coord!("d6"), Some(Piece::pack(Side::Black, Rank::Bishop)))
+            .unwrap();
+
+        let valid_moves = possible_captures(&coord!("d4"), &state);
+
+        assert_eq!(
+            valid_moves,
+            vec![
+                Action::Capture(
+                    state.piece_at(coord!("d4")).unwrap().clone(),
+                    state.piece_at(coord!("d6")).unwrap().clone(),
+                    coord!("d4"),
+                    coord!("d6"),
+                ),
+                Action::Capture(
+                    state.piece_at(coord!("d4")).unwrap().clone(),
+                    state.piece_at(coord!("g7")).unwrap().clone(),
+                    coord!("d4"),
+                    coord!("g7"),
+                ),
+                Action::Capture(
+                    state.piece_at(coord!("d4")).unwrap().clone(),
+                    state.piece_at(coord!("b6")).unwrap().clone(),
+                    coord!("d4"),
+                    coord!("b6"),
+                ),
+            ]
+        )
     }
 }
