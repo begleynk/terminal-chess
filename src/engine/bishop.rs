@@ -6,7 +6,7 @@ use engine::{find_moves_in_direction, find_opposing_piece_in_direction};
 pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let mut actions = vec![];
     actions.append(&mut possible_moves(from, state));
-    //actions.append(&mut possible_captures(from, state));
+    actions.append(&mut possible_captures(from, state));
 
     actions
 }
