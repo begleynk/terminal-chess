@@ -33,7 +33,7 @@ fn apply_move(
         Rank::Bishop => unimplemented!(),
         Rank::Rook => unimplemented!(),
         Rank::Queen => unimplemented!(),
-        Rank::King => king::apply_move(piece, from, to, state),
+        Rank::King => unimplemented!()
     }
 }
 
@@ -115,7 +115,7 @@ pub fn possible_actions_for_piece(
         Rank::Bishop => bishop::possible_actions(from, state),
         Rank::Rook => rook::possible_actions(from, state),
         Rank::Queen => queen::possible_actions(from, state),
-        Rank::King => unimplemented!(),
+        Rank::King => king::possible_actions(from, state)
     }
 }
 
