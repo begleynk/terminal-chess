@@ -1,6 +1,5 @@
 use game::{Action, GameState};
 use board::{Coordinate};
-use piece::{Piece, Rank};
 use engine::Mover;
 use Side;
 
@@ -64,6 +63,7 @@ mod tests {
     use board::Board;
     use Side;
     use engine;
+    use piece::{Piece, Rank};
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
@@ -82,7 +82,7 @@ mod tests {
         let to = Coordinate::from_human("e6".to_string()).unwrap();
 
         assert_eq!(
-            engine::xx_apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
+            engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
             Ok(())
         );
         assert_eq!(
@@ -107,7 +107,7 @@ mod tests {
         let to = Coordinate::from_human("e6".to_string()).unwrap();
 
         assert_eq!(
-            engine::xx_apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
+            engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
             Err("Invalid move".to_string())
         );
         assert_eq!(state.history().len(), 0, "History updated");

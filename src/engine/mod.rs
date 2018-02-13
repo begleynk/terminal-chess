@@ -12,33 +12,6 @@ mod king;
 
 pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String> {
     match *action {
-        Action::MovePiece(piece, from, to) => apply_move(&piece, &from, &to, state),
-        Action::Capture(capturer, target, from, to) => unimplemented!(),
-        Action::Promotion(_, _, _, _) => unimplemented!(),
-    }
-}
-
-fn apply_move(
-    piece: &Piece,
-    from: &Coordinate,
-    to: &Coordinate,
-    state: &mut GameState,
-) -> Result<(), String> {
-    // Assert the "from" coordinate has the piece we are expecting
-    assert_eq!(state.piece_at(*from), &Some(*piece));
-
-    match piece.rank() {
-        Rank::Pawn => unimplemented!(),
-        Rank::Knight => unimplemented!(),
-        Rank::Bishop => unimplemented!(),
-        Rank::Rook => unimplemented!(),
-        Rank::Queen => unimplemented!(),
-        Rank::King => unimplemented!()
-    }
-}
-
-pub fn xx_apply_action(action: &Action, state: &mut GameState) -> Result<(), String> {
-    match *action {
         Action::MovePiece(piece, from, to) => {
             let possible_moves: Vec<Action> = possible_actions_for_piece(&piece, &from, &state)
                 .into_iter()

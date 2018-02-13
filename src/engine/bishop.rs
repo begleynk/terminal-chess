@@ -1,6 +1,5 @@
 use game::{Action, GameState};
 use board::Coordinate;
-use piece::{Piece, Rank};
 use engine::{find_moves_in_direction, find_opposing_piece_in_direction};
 
 pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
@@ -82,6 +81,7 @@ mod tests {
     use super::*;
     use board::Board;
     use Side;
+    use piece::{Piece, Rank};
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }

@@ -97,7 +97,7 @@ mod tests {
         let from = coord!("e2");
         let to = coord!("e3");
 
-        assert_eq!(engine::xx_apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state), Ok(()));
+        assert_eq!(engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state), Ok(()));
         assert_eq!(state.board().piece_at(coord!("e3")), &Some(piece));
         assert_eq!(state.history().len(), 1, "History not updated");
         assert_eq!(state.next_to_move(), Side::Black, "Side not updated");
@@ -111,7 +111,7 @@ mod tests {
         let from = coord!("e2");
         let to = coord!("e4");
 
-        assert_eq!(engine::xx_apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state), Ok(()));
+        assert_eq!(engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state), Ok(()));
         assert_eq!(state.board().piece_at(coord!("e4")), &Some(piece));
         assert_eq!(state.history().len(), 1, "History not updated");
     }
@@ -130,7 +130,7 @@ mod tests {
         let to = coord!("e3");
 
         assert_eq!(
-            engine::xx_apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
+            engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
             Err("Invalid move".to_string())
         );
         assert_eq!(
@@ -150,12 +150,12 @@ mod tests {
 
         // Move pawn to e3
         assert_eq!(
-            engine::xx_apply_action(&Action::MovePiece(state.piece_at(coord!("e2")).unwrap().clone(), coord!("e2"), coord!("e3")), &mut state),
+            engine::apply_action(&Action::MovePiece(state.piece_at(coord!("e2")).unwrap().clone(), coord!("e2"), coord!("e3")), &mut state),
             Ok(())
         );
         // Random black move
         assert_eq!(
-            engine::xx_apply_action(&Action::MovePiece(state.piece_at(coord!("b7")).unwrap().clone(), coord!("b7"), coord!("b6")), &mut state),
+            engine::apply_action(&Action::MovePiece(state.piece_at(coord!("b7")).unwrap().clone(), coord!("b7"), coord!("b6")), &mut state),
             Ok(())
         );
 
@@ -165,7 +165,7 @@ mod tests {
         let to = coord!("e5");
 
         assert_eq!(
-            engine::xx_apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
+            engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
             Err("Invalid move".to_string())
         );
         assert_eq!(state.board().piece_at(coord!("e4")), &None);
@@ -189,7 +189,7 @@ mod tests {
             .unwrap(); // In the way
 
         assert_eq!(
-            engine::xx_apply_action(
+            engine::apply_action(
                 &Action::Capture(
                     Piece::pack(Side::White, Rank::Pawn),
                     Piece::pack(Side::Black, Rank::Knight),

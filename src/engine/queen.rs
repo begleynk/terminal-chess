@@ -1,6 +1,5 @@
 use game::{Action, GameState};
 use board::{Coordinate};
-use piece::{Piece, Rank};
 use engine::{find_moves_in_direction, find_opposing_piece_in_direction};
 
 
@@ -74,6 +73,7 @@ mod tests {
     use super::*;
     use Side;
     use board::Board;
+    use piece::{Piece, Rank};
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
