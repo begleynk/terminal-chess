@@ -65,6 +65,10 @@ impl GameState {
         self.board = board;
     }
 
+    pub fn actions_at(&self, coordinate: Coordinate) -> Vec<Action> {
+        engine::possible_actions(&coordinate, &self)
+    }
+
     pub fn toggle_side(&mut self) {
         match self.next_to_move {
             Side::White => self.next_to_move = Side::Black,
@@ -73,20 +77,20 @@ impl GameState {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Game {
     current_state: GameState,
 }
 
 #[allow(dead_code)] // TODO: Remove
 impl Game {
-    fn new() -> Game {
+    pub fn new() -> Game {
         Game {
             current_state: GameState::new(),
         }
     }
 
-    fn current_turn(&self) -> Side {
+    pub fn current_turn(&self) -> Side {
         self.current_state.next_to_move
     }
 
@@ -94,11 +98,15 @@ impl Game {
         self.current_state.history()
     }
 
-    fn board(&self) -> &Board {
+    pub fn board(&self) -> &Board {
         &self.current_state.board()
     }
 
-    fn advance(&mut self, action: Action) -> Result<(), String> {
+    pub fn state(&self) -> &GameState {
+        &self.current_state
+    }
+
+    pub fn advance(&mut self, action: Action) -> Result<(), String> {
         engine::apply_action(&action, &mut self.current_state)?;
 
         Ok(())

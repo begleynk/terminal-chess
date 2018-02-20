@@ -13,7 +13,7 @@ mod king;
 pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String> {
     match *action {
         Action::MovePiece(piece, from, to) => {
-            let possible_moves: Vec<Action> = possible_actions_for_piece(&piece, &from, &state)
+            let possible_moves: Vec<Action> = possible_actions(&from, &state)
                 .into_iter()
                 .filter(|a| match *a {
                     Action::MovePiece(_, _, _) => true,
@@ -41,7 +41,7 @@ pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String
         }
         Action::Capture(capturer, target, from, to) => {
             let possible_captures: Vec<Action> =
-                possible_actions_for_piece(&capturer, &from, &state)
+                possible_actions(&from, &state)
                     .into_iter()
                     .filter(|a| match *a {
                         Action::Capture(_, _, _, _) => true,
@@ -77,18 +77,21 @@ pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String
     }
 }
 
-pub fn possible_actions_for_piece(
-    piece: &Piece,
+pub fn possible_actions(
     from: &Coordinate,
     state: &GameState,
 ) -> Vec<Action> {
-    match piece.rank() {
-        Rank::Pawn => pawn::possible_actions(from, state),
-        Rank::Knight => knight::possible_actions(from, state),
-        Rank::Bishop => bishop::possible_actions(from, state),
-        Rank::Rook => rook::possible_actions(from, state),
-        Rank::Queen => queen::possible_actions(from, state),
-        Rank::King => king::possible_actions(from, state)
+    if let &Some(piece) = state.piece_at(*from) {
+        match piece.rank() {
+            Rank::Pawn => pawn::possible_actions(from, state),
+            Rank::Knight => knight::possible_actions(from, state),
+            Rank::Bishop => bishop::possible_actions(from, state),
+            Rank::Rook => rook::possible_actions(from, state),
+            Rank::Queen => queen::possible_actions(from, state),
+            Rank::King => king::possible_actions(from, state)
+        }
+    } else {
+        vec![]
     }
 }
 

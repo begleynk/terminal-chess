@@ -78,6 +78,10 @@ impl Board {
         &self.data[coordinate.row()][coordinate.column()]
     }
 
+    pub fn rows(&self) -> &[[Option<Piece>; 8]] {
+        &self.data
+    }
+
     pub fn is_empty(&self, coordinate: Coordinate) -> bool {
         match *self.piece_at(coordinate) {
             None => true,

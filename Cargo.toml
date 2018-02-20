@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["Niklas Begley <niklas.begley@gmail.com>"]
 
 [dependencies]
+clap = "2.30.0"
+termion = "1.5.1"
