@@ -29,6 +29,9 @@ pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String
                 state
                     .update_board(&to, Some(piece.clone()))
                     .expect("Bad move found. Bug");
+                state
+                    .update_board(&from, None)
+                    .expect("Bad move found. Bug");
                 state.add_action_to_history(
                     Action::MovePiece(piece.clone(), from.clone(), to.clone()),
                 );

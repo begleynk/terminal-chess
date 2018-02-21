@@ -2,6 +2,9 @@ use game::{Action, Game};
 use ui::Cursor;
 use Side;
 
+use piece::{Piece, Rank};
+use board::Coordinate;
+
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -34,6 +37,9 @@ impl Session {
     pub fn run(mut self) {
         let mut stdout = ::std::io::stdout().into_raw_mode().unwrap();
 
+        self.current_game.advance(Action::MovePiece(Piece::pack(Side::White, Rank::Pawn), Coordinate::from_human("e2".to_owned()).unwrap(), Coordinate::from_human("e4".to_owned()).unwrap()));
+
+        ::ui::clear(&mut stdout);
         ::ui::draw(&self, &mut stdout);
 
         for c in ::std::io::stdin().keys() {
@@ -52,6 +58,10 @@ impl Session {
 
     pub fn cursor(&self) -> &Cursor {
         &self.cursor
+    }
+
+    pub fn player_as(&self) -> Side {
+        self.player_as
     }
 
     fn update(&mut self, input: Key) {
