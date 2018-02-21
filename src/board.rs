@@ -217,6 +217,10 @@ impl fmt::Debug for Board {
 mod tests {
     use super::*;
 
+    macro_rules! coord {
+        ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
+    }
+
     #[test]
     fn coordinates_can_be_created_from_human_readable_strings() {
         // Note we store 0-indexed
@@ -232,5 +236,46 @@ mod tests {
         let coord = Coordinate::from_human("h8".to_owned()).unwrap();
         assert_eq!(coord.row(), 7, "Incorrect row index parserd");
         assert_eq!(coord.column(), 7, "Incorrect column index parserd");
+    }
+
+    #[test]
+    fn pieces_are_at_correct_starting_position() {
+        let board = Board::default();
+
+        assert_eq!(*board.piece_at(coord!("a1")), Some(Piece::pack(Side::White, Rank::Rook)));
+        assert_eq!(*board.piece_at(coord!("b1")), Some(Piece::pack(Side::White, Rank::Knight)));
+        assert_eq!(*board.piece_at(coord!("c1")), Some(Piece::pack(Side::White, Rank::Bishop)));
+        assert_eq!(*board.piece_at(coord!("d1")), Some(Piece::pack(Side::White, Rank::Queen)));
+        assert_eq!(*board.piece_at(coord!("e1")), Some(Piece::pack(Side::White, Rank::King)));
+        assert_eq!(*board.piece_at(coord!("f1")), Some(Piece::pack(Side::White, Rank::Bishop)));
+        assert_eq!(*board.piece_at(coord!("g1")), Some(Piece::pack(Side::White, Rank::Knight)));
+        assert_eq!(*board.piece_at(coord!("h1")), Some(Piece::pack(Side::White, Rank::Rook)));
+
+        assert_eq!(*board.piece_at(coord!("a2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("b2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("c2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("d2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("e2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("f2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("g2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("h2")), Some(Piece::pack(Side::White, Rank::Pawn)));
+
+        assert_eq!(*board.piece_at(coord!("a8")), Some(Piece::pack(Side::Black, Rank::Rook)));
+        assert_eq!(*board.piece_at(coord!("b8")), Some(Piece::pack(Side::Black, Rank::Knight)));
+        assert_eq!(*board.piece_at(coord!("c8")), Some(Piece::pack(Side::Black, Rank::Bishop)));
+        assert_eq!(*board.piece_at(coord!("d8")), Some(Piece::pack(Side::Black, Rank::Queen)));
+        assert_eq!(*board.piece_at(coord!("e8")), Some(Piece::pack(Side::Black, Rank::King)));
+        assert_eq!(*board.piece_at(coord!("f8")), Some(Piece::pack(Side::Black, Rank::Bishop)));
+        assert_eq!(*board.piece_at(coord!("g8")), Some(Piece::pack(Side::Black, Rank::Knight)));
+        assert_eq!(*board.piece_at(coord!("h8")), Some(Piece::pack(Side::Black, Rank::Rook)));
+
+        assert_eq!(*board.piece_at(coord!("a7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("b7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("c7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("d7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("e7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("f7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("g7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        assert_eq!(*board.piece_at(coord!("h7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
     }
 }

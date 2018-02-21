@@ -37,8 +37,6 @@ impl Session {
     pub fn run(mut self) {
         let mut stdout = ::std::io::stdout().into_raw_mode().unwrap();
 
-        self.current_game.advance(Action::MovePiece(Piece::pack(Side::White, Rank::Pawn), Coordinate::from_human("e2".to_owned()).unwrap(), Coordinate::from_human("e4".to_owned()).unwrap()));
-
         ::ui::clear(&mut stdout);
         ::ui::draw(&self, &mut stdout);
 

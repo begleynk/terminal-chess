@@ -5,7 +5,7 @@ use std::io::{Write};
 use board::Coordinate;
 use piece::{Piece, Rank};
 
-use termion::color;
+use termion::{color, style};
 
 type Out = termion::raw::RawTerminal<::std::io::Stdout>;
 
@@ -13,8 +13,15 @@ static SIDE_BUFFER : &str = "     ";
 
 pub fn draw(session: &Session, out: &mut Out) {
     write!(out, "{}", termion::cursor::Goto(1, 1));
+    clear(out);
 
     write!(out, "\n\n{}", SIDE_BUFFER);
+    if session.game().current_turn() == Side::White {
+        write!(out, "To Act: {}White{}\n\r", style::Bold, style::Reset);
+    } else {
+        write!(out, "To Act: {}Black{}\n\r", style::Bold, style::Reset);
+    }
+    write!(out, "{}", SIDE_BUFFER);
     write!(out, "Cursor at: {}, {} | Piece: {:?}\n\r", session.cursor().row(), session.cursor().column(), session.game().state().piece_at(Coordinate::new(session.cursor().row(), session.cursor().column())));
     draw_table(session, out);
     write!(out, "\n\n\r");
@@ -22,7 +29,7 @@ pub fn draw(session: &Session, out: &mut Out) {
 }
 
 fn draw_table(session: &Session, out: &mut Out) {
-    for (index, row) in session.game().board().rows().into_iter().rev().enumerate() {
+    for (index, row) in row_iterator(session).enumerate() {
         draw_row(row, index, session, out);
     }
 }
@@ -34,21 +41,21 @@ pub fn clear(out: &mut Out) {
 fn draw_row(row: &[Option<Piece>; 8], row_index: usize, session: &Session, out: &mut Out) {
     // First row
     write!(out, "{}", SIDE_BUFFER);
-    for (col_index, square) in row.into_iter().enumerate() {
+    for (col_index, _square) in column_iterator(session, row).enumerate() {
         draw_square_padding(out, row_index, col_index, session);
     }
     write!(out, "\n\r");
 
     // Second row with the character
     write!(out, "{}", SIDE_BUFFER);
-    for (col_index, square) in row.into_iter().enumerate() {
+    for (col_index, square) in column_iterator(session, row).enumerate() {
         draw_square_with_piece(square, out, row_index, col_index, session);
     }
     write!(out, "\n\r");
 
     // Third row, same as above (ish)
     write!(out, "{}", SIDE_BUFFER);
-    for (col_index, square) in row.into_iter().enumerate() {
+    for (col_index, _square) in column_iterator(session, row).enumerate() {
         draw_square_padding(out, row_index, col_index, session);
     }
     write!(out, "\n\r");
@@ -56,7 +63,7 @@ fn draw_row(row: &[Option<Piece>; 8], row_index: usize, session: &Session, out: 
 
 fn cursor_on_square(session: &Session, row_index: usize, col_index: usize) -> bool {
     match session.player_as() {
-        Side::Black => session.cursor().row() == row_index && session.cursor().column() == col_index,
+        Side::Black => session.cursor().row() == row_index && session.cursor().column() == 7 - col_index,
         Side::White => session.cursor().row() == 7 - row_index && session.cursor().column() == col_index,
     }
 }
@@ -103,6 +110,20 @@ fn format_piece(piece: &Option<Piece>) -> &str {
         }
     } else {
         " "
+    }
+}
+
+fn row_iterator<'a>(session: &'a Session) -> Box<Iterator<Item = &'a[Option<Piece>; 8]> + 'a> {
+    match session.player_as() {
+        Side::White => Box::new(session.game().board().rows().into_iter().rev()),
+        Side::Black => Box::new(session.game().board().rows().into_iter())
+    }
+}
+
+fn column_iterator<'a>(session: &Session, row: &'a [Option<Piece>; 8]) -> Box<Iterator<Item = &'a Option<Piece>> + 'a> {
+    match session.player_as() {
+        Side::White => Box::new(row.into_iter()),
+        Side::Black => Box::new(row.into_iter().rev())
     }
 }
 
