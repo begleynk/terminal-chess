@@ -10,9 +10,9 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 #[derive(PartialEq, Clone, Debug)]
-enum SessionState {
+pub enum SessionState {
     NothingSelected,
-    CoordinateSelected(Vec<Action>),
+    CoordinateSelected(Coordinate, Vec<Action>),
     WillQuit
 }
 
@@ -21,7 +21,7 @@ pub struct Session {
     current_game: Game,
     cursor: Cursor,
     player_as: Side,
-    state: SessionState
+    state: SessionState,
 }
 
 impl Session {
@@ -62,6 +62,10 @@ impl Session {
         self.player_as
     }
 
+    pub fn state(&self) -> &SessionState {
+        &self.state
+    }
+
     fn update(&mut self, input: Key) {
         match input {
             Key::Char('q') => self.state = SessionState::WillQuit,
@@ -75,8 +79,18 @@ impl Session {
                         if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
                             if piece.side() == self.game().state().next_to_move() {
                                 let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
-                                self.state = SessionState::CoordinateSelected(possible_actions)
+                                self.state = SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions)
                             }
+                        }
+                    },
+                    SessionState::CoordinateSelected(_,_) => {
+                        if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
+                            if piece.side() == self.game().state().next_to_move() {
+                                let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
+                                self.state = SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions)
+                            }
+                        } else {
+                            self.state = SessionState::NothingSelected;
                         }
                     }
                     _ => unimplemented!()

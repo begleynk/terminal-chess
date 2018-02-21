@@ -1,9 +1,11 @@
 extern crate termion;
 
-use {Session, Side};
+use {Side};
+use session::{Session, SessionState};
 use std::io::{Write};
 use board::Coordinate;
 use piece::{Piece, Rank};
+use game::Action;
 
 use termion::{color, style};
 
@@ -61,16 +63,13 @@ fn draw_row(row: &[Option<Piece>; 8], row_index: usize, session: &Session, out: 
     write!(out, "\n\r");
 }
 
-fn cursor_on_square(session: &Session, row_index: usize, col_index: usize) -> bool {
-    match session.player_as() {
-        Side::Black => session.cursor().row() == row_index && session.cursor().column() == 7 - col_index,
-        Side::White => session.cursor().row() == 7 - row_index && session.cursor().column() == col_index,
-    }
-}
-
 fn draw_square_padding(out: &mut Out, row_index: usize, col_index: usize, session: &Session) {
-    if cursor_on_square(session, row_index, col_index) {
+    if is_under_cursor(session, row_index, col_index) {
         write!(out, "{}       {}", color::Bg(color::Rgb(0,100,100)), color::Bg(color::Reset));
+    } else if is_possible_action(session, row_index, col_index) {
+        write!(out, "{}       {}", color::Bg(color::Rgb(010,000,100)), color::Bg(color::Reset));
+    } else if is_chosen_square(session, row_index, col_index) {
+        write!(out, "{}       {}", color::Bg(color::Rgb(100,000,000)), color::Bg(color::Reset));
     } else {
         if (col_index + row_index) % 2 == 0 {
             write!(out, "{}       {}", color::Bg(color::Rgb(226,226,226)), color::Bg(color::Reset));
@@ -81,14 +80,49 @@ fn draw_square_padding(out: &mut Out, row_index: usize, col_index: usize, sessio
 }
 
 fn draw_square_with_piece(square: &Option<Piece>, out: &mut Out, row_index: usize, col_index: usize, session: &Session) {
-    if cursor_on_square(session, row_index, col_index) {
+    if is_under_cursor(session, row_index, col_index) {
         write!(out, "{}   {}   {}", color::Bg(color::Rgb(0,100,100)), format_piece(square), color::Bg(color::Reset));
+    } else if is_possible_action(session, row_index, col_index) {
+        write!(out, "{}   {}   {}", color::Bg(color::Rgb(010,000,100)), format_piece(square), color::Bg(color::Reset));
+    } else if is_chosen_square(session, row_index, col_index) {
+        write!(out, "{}   {}   {}", color::Bg(color::Rgb(100,000,000)), format_piece(square), color::Bg(color::Reset));
     } else {
         if (col_index + row_index) % 2 == 0 {
             write!(out, "{}   {}   {}", color::Bg(color::Rgb(226,226,226)), format_piece(square), color::Bg(color::Reset));
         } else {
             write!(out, "{}   {}   {}", color::Bg(color::Rgb(190,190,190)), format_piece(square), color::Bg(color::Reset));
         }
+    }
+}
+
+fn is_under_cursor(session: &Session, row_index: usize, col_index: usize) -> bool {
+    matches_coordinate(session, &session.cursor().to_coord(), row_index, col_index)
+}
+
+fn is_possible_action(session: &Session, row_index: usize, col_index: usize) -> bool {
+    match session.state() {
+        &SessionState::CoordinateSelected(_, ref actions) => actions.into_iter().any(|action|
+            match *action {
+                Action::MovePiece(_,_,ref to) => matches_coordinate(session, to, row_index, col_index),
+                Action::Capture(_,_,_,ref to) => matches_coordinate(session, to, row_index, col_index),
+                _ => false
+            }
+        ),
+        _ => false
+    }
+}
+
+fn is_chosen_square(session: &Session, row_index: usize, col_index: usize) -> bool {
+    match *session.state() {
+        SessionState::CoordinateSelected(ref coord, _) => matches_coordinate(session, coord, row_index, col_index),
+        _ => false
+    }
+}
+
+fn matches_coordinate(session: &Session, coord: &Coordinate, row_index: usize, col_index: usize) -> bool {
+    match session.player_as() {
+        Side::Black => coord.row() == row_index && coord.column() == 7 - col_index,
+        Side::White => coord.row() == 7 - row_index && coord.column() == col_index,
     }
 }
 
