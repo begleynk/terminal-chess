@@ -1,7 +1,8 @@
-use game::{Action, GameState};
+use game::{GameState};
 use board::{Board, Coordinate};
 use piece::{Piece, Rank};
 use Side;
+use action::Action;
 
 mod pawn;
 mod knight;

@@ -2,13 +2,7 @@ use piece::{Piece};
 use Side;
 use board::{Board, Coordinate};
 use engine;
-
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum Action {
-    MovePiece(Piece, Coordinate, Coordinate),
-    Capture(Piece, Piece, Coordinate, Coordinate),
-    Promotion(Piece, Piece, Coordinate, Coordinate),
-}
+use action::Action;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct GameState {

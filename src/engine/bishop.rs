@@ -1,4 +1,5 @@
-use game::{Action, GameState};
+use game::{GameState};
+use action::Action;
 use board::Coordinate;
 use engine::{find_moves_in_direction, find_opposing_piece_in_direction};
 

@@ -1,4 +1,5 @@
-use game::{Action, GameState};
+use game::{GameState};
+use action::Action;
 use board::{Coordinate};
 use engine::{Mover};
 

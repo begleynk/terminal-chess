@@ -1,6 +1,7 @@
-use game::{Action, Game};
+use game::{Game};
 use ui::Cursor;
 use Side;
+use action::{Action, to_coordinate_for};
 
 use piece::{Piece, Rank};
 use board::Coordinate;
@@ -67,6 +68,8 @@ impl Session {
     }
 
     fn update(&mut self, input: Key) {
+        let mut next_state: Option<SessionState> = None;
+
         match input {
             Key::Char('q') => self.state = SessionState::WillQuit,
             Key::Up => self.cursor.up(),
@@ -79,24 +82,31 @@ impl Session {
                         if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
                             if piece.side() == self.game().state().next_to_move() {
                                 let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
-                                self.state = SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions)
+                                next_state = Some(SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions));
                             }
                         }
                     },
-                    SessionState::CoordinateSelected(_,_) => {
-                        if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
+                    SessionState::CoordinateSelected(ref _coord, ref actions) => {
+                        if let Some(action) = actions.into_iter().find(|a| to_coordinate_for(a) == &self.cursor.to_coord() ) {
+                            self.current_game.advance(action.clone());
+                            next_state = Some(SessionState::NothingSelected);
+                        } else if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
                             if piece.side() == self.game().state().next_to_move() {
                                 let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
-                                self.state = SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions)
+                                next_state = Some(SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions));
                             }
                         } else {
-                            self.state = SessionState::NothingSelected;
+                            next_state = Some(SessionState::NothingSelected);
                         }
                     }
                     _ => unimplemented!()
                 }
             }
             _ => {}
+        }
+
+        if let Some(state) = next_state {
+            self.state = state;
         }
     }
 }

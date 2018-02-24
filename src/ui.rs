@@ -5,7 +5,7 @@ use session::{Session, SessionState};
 use std::io::{Write};
 use board::Coordinate;
 use piece::{Piece, Rank};
-use game::Action;
+use action::Action;
 
 use termion::{color, style};
 

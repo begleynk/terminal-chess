@@ -6,14 +6,15 @@
     "configurations": [
         {
             "type": "lldb",
-            "request": "launch",
             "name": "Debug New",
+            "request": "attach",
             "program": "${workspaceRoot}/target/debug/terminal-chess",
             "args": ["new"],
             "cwd": "${workspaceRoot}",
             "sourceLanguages": [
                 "rust"
-            ]
+            ],
+            "console": "internalConsole"
         }
     ]
 }
