@@ -2,8 +2,6 @@ use game::{Game};
 use ui::Cursor;
 use Side;
 use action::{Action, to_coordinate_for};
-
-use piece::{Piece, Rank};
 use board::Coordinate;
 
 use termion::event::Key;
@@ -38,12 +36,12 @@ impl Session {
     pub fn run(mut self) {
         let mut stdout = ::std::io::stdout().into_raw_mode().unwrap();
 
-        ::ui::clear(&mut stdout);
-        ::ui::draw(&self, &mut stdout);
+        ::ui::clear(&mut stdout).expect("Error drawing UI");
+        ::ui::draw(&self, &mut stdout).expect("Error drawing UI");
 
         for c in ::std::io::stdin().keys() {
             self.update(c.unwrap());
-            ::ui::draw(&self, &mut stdout);
+            ::ui::draw(&self, &mut stdout).expect("Error drawing UI");
 
             if self.state == SessionState::WillQuit {
                 break;
@@ -88,7 +86,7 @@ impl Session {
                     },
                     SessionState::CoordinateSelected(ref _coord, ref actions) => {
                         if let Some(action) = actions.into_iter().find(|a| to_coordinate_for(a) == &self.cursor.to_coord() ) {
-                            self.current_game.advance(action.clone());
+                            self.current_game.advance(action.clone()).expect("Illegal move found");
                             next_state = Some(SessionState::NothingSelected);
                         } else if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
                             if piece.side() == self.game().state().next_to_move() {

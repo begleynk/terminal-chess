@@ -1,7 +1,7 @@
 extern crate terminal_chess;
 extern crate clap;
 
-use clap::{Arg, App, SubCommand};
+use clap::{App, SubCommand};
 
 fn main() {
     let app = App::new("Terminal Chess")
@@ -17,7 +17,7 @@ fn main() {
 
     let matches = app.get_matches();
 
-    if let Some(subcommand_matches) = matches.subcommand_matches("new") {
+    if let Some(_subcommand_matches) = matches.subcommand_matches("new") {
         let mut session = terminal_chess::new_session();
         session.run();
     } else {

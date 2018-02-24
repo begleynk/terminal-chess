@@ -1,6 +1,6 @@
 use game::{GameState};
 use board::{Board, Coordinate};
-use piece::{Piece, Rank};
+use piece::{Rank};
 use Side;
 use action::Action;
 
