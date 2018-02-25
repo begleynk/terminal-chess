@@ -10,6 +10,8 @@ mod action;
 use std::fmt;
 use session::Session;
 
+use std::ops::Not;
+
 pub fn new_session() -> Session {
     Session::new()
 }
@@ -25,6 +27,17 @@ impl fmt::Debug for Side {
         match *self {
             Side::White => write!(f, "{}", "W"),
             Side::Black => write!(f, "{}", "B"),
+        }
+    }
+}
+
+impl Not for Side {
+    type Output = Side;
+
+    fn not(self) -> Side {
+        match self {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
         }
     }
 }

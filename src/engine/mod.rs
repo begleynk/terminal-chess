@@ -3,6 +3,7 @@ use board::{Board, Coordinate};
 use piece::{Rank};
 use Side;
 use action::Action;
+use piece::Piece;
 
 mod pawn;
 mod knight;
@@ -232,4 +233,76 @@ where
     }
 
     result
+}
+
+pub fn is_in_check(state: &GameState) -> bool {
+    let my_king = Piece::pack(state.next_to_move(), Rank::King);
+    let all_my_king_coordinates = state.board().find_pieces(my_king);
+
+    let king_coordinate = all_my_king_coordinates.get(0).expect("No king on the board");
+
+    state.board().pieces_with_coordinates()
+        .into_iter()
+        .filter(|&(_coordinate, piece)| piece.side() != state.next_to_move())
+        .flat_map(|(coordinate, _piece)| possible_actions(&coordinate, &state.peek_into_the_future()))
+        .any(|action| action_matches_coordinate(&action, &king_coordinate))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use piece::Piece;
+
+    macro_rules! coord {
+        ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
+    }
+
+    #[test]
+    fn can_detect_check() {
+        let mut state = GameState::new();
+        state.set_board(Board::empty());
+
+        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        state.update_board(&coord!("e4"), Some(Piece::pack(Side::Black, Rank::Queen))).unwrap();
+
+        assert!(is_in_check(&state));
+    }
+
+    #[test]
+    fn can_detect_when_not_in_check() {
+        let mut state = GameState::new();
+        state.set_board(Board::empty());
+
+        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        state.update_board(&coord!("a1"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
+
+        assert!(!is_in_check(&state));
+    }
+
+    #[test]
+    fn dis_bug() {
+        use game::Game;
+
+        let mut game = Game::new();
+
+        game.advance(Action::MovePiece(
+            Piece::pack(Side::White, Rank::Pawn),
+            Coordinate::from_human("e2".to_owned()).unwrap(),
+            Coordinate::from_human("e3".to_owned()).unwrap(),
+        )).unwrap();
+
+        game.advance(Action::MovePiece(
+            Piece::pack(Side::Black, Rank::Pawn),
+            Coordinate::from_human("d7".to_owned()).unwrap(),
+            Coordinate::from_human("d6".to_owned()).unwrap(),
+        )).unwrap();
+
+        game.advance(Action::MovePiece(
+            Piece::pack(Side::White, Rank::Bishop),
+            Coordinate::from_human("f1".to_owned()).unwrap(),
+            Coordinate::from_human("b5".to_owned()).unwrap(),
+        )).unwrap();
+
+        assert!(is_in_check(game.state()));
+    }
 }

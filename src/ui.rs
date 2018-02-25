@@ -27,7 +27,11 @@ pub fn draw(session: &Session, out: &mut Out) -> Result<()> {
     write!(out, "{}", SIDE_BUFFER)?;
     write!(out, "Cursor at: {}, {} | Piece: {:?}\n\r", session.cursor().row(), session.cursor().column(), session.game().state().piece_at(Coordinate::new(session.cursor().row(), session.cursor().column())))?;
     draw_table(session, out)?;
-    write!(out, "\n\n\r")?;
+    if ::engine::is_in_check(session.game().state()) {
+        write!(out, "IN CHECK!\n\r")?;
+    } else {
+        write!(out, "NOT IN CHECK\n\r")?;
+    }
     write!(out, "{}", termion::cursor::Goto(1, 1))?;
 
     Ok(())

@@ -78,6 +78,17 @@ impl Board {
         &self.data[coordinate.row()][coordinate.column()]
     }
 
+    pub fn pieces_with_coordinates(&self) -> Vec<(Coordinate, Piece)> {
+        self.data.into_iter()
+                 .flat_map(|x| x)
+                 .enumerate()
+                 .filter_map(|(index, piece)| match *piece {
+                     Some(p) => Some((Coordinate::new(index / 8, index % 8), p)),
+                     None => None
+                 })
+                 .collect()
+    }
+
     pub fn rows(&self) -> &[[Option<Piece>; 8]] {
         &self.data
     }
@@ -95,6 +106,14 @@ impl Board {
         self.data[coordinate.row()][coordinate.column()] = piece;
 
         Ok(())
+    }
+
+    pub fn find_pieces(&self, target_piece: Piece) -> Vec<Coordinate> {
+        self.pieces_with_coordinates()
+            .into_iter()
+            .filter(|&(_coordinate, piece)| piece == target_piece)
+            .map(|(coordinate, _piece)| coordinate )
+            .collect()
     }
 }
 
@@ -277,5 +296,23 @@ mod tests {
         assert_eq!(*board.piece_at(coord!("f7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
         assert_eq!(*board.piece_at(coord!("g7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
         assert_eq!(*board.piece_at(coord!("h7")), Some(Piece::pack(Side::Black, Rank::Pawn)));
+    }
+
+    #[test]
+    fn finds_coordinates_of_pieces_on_the_board() {
+        let board = Board::default();
+
+        assert_eq!(
+            board.find_pieces(Piece::pack(Side::Black, Rank::King)),
+            vec![coord!("e8")]
+        );
+
+        assert_eq!(
+            board.find_pieces(Piece::pack(Side::Black, Rank::Knight)),
+            vec![
+                coord!("b8"),
+                coord!("g8")
+            ]
+        );
     }
 }

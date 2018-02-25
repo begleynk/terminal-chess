@@ -28,7 +28,7 @@ impl GameState {
     }
 
     pub fn next_to_move(&self) -> Side {
-        self.next_to_move.clone()
+        self.next_to_move
     }
 
     pub fn add_action_to_history(&mut self, action: Action) {
@@ -69,6 +69,15 @@ impl GameState {
             Side::Black => self.next_to_move = Side::White,
         }
     }
+
+    pub fn peek_into_the_future(&self) -> GameState {
+        GameState {
+            next_to_move: !self.next_to_move,
+            history: self.history.clone(),
+            board: self.board.clone(),
+            captures: self.captures.clone(),
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -104,6 +113,10 @@ impl Game {
         engine::apply_action(&action, &mut self.current_state)?;
 
         Ok(())
+    }
+
+    pub fn has_completed(&self) -> bool {
+        false
     }
 }
 

@@ -15,6 +15,7 @@ pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
 pub fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let side = state.next_to_move();
     let mut moves = vec![];
+
     // North
     moves.append(&mut find_moves_in_direction(from, side, state.board(),|mover| mover.north()));
     // North East

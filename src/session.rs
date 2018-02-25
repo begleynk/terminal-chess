@@ -46,6 +46,10 @@ impl Session {
             if self.state == SessionState::WillQuit {
                 break;
             }
+
+            if self.current_game.has_completed() {
+                break;
+            }
         }
     }
 
@@ -84,15 +88,21 @@ impl Session {
                             }
                         }
                     },
-                    SessionState::CoordinateSelected(ref _coord, ref actions) => {
+                    SessionState::CoordinateSelected(ref coord, ref actions) => {
+                        // We have found a move, lets invoke it
                         if let Some(action) = actions.into_iter().find(|a| to_coordinate_for(a) == &self.cursor.to_coord() ) {
                             self.current_game.advance(action.clone()).expect("Illegal move found");
                             next_state = Some(SessionState::NothingSelected);
+                        // We're on the same coordinate we selected before, clear selection
+                        } else if *coord == self.cursor.to_coord() {
+                            next_state = Some(SessionState::NothingSelected);
+                        // We've found another piece, lets select it
                         } else if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
                             if piece.side() == self.game().state().next_to_move() {
                                 let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
                                 next_state = Some(SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions));
                             }
+                        // We've found an empty piece, clear selection
                         } else {
                             next_state = Some(SessionState::NothingSelected);
                         }
