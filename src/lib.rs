@@ -6,6 +6,7 @@ mod engine;
 mod ui;
 mod session;
 mod action;
+mod ai;
 
 use std::fmt;
 use session::Session;
