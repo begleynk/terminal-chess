@@ -1,0 +1,13 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: rust:1.24.1
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: cargo build --features "strict"
+      - run:
+          name: Test
+          command: cargo test
