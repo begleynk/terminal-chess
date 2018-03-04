@@ -3,6 +3,7 @@ use ui::Cursor;
 use Side;
 use action::{Action, to_coordinate_for};
 use board::Coordinate;
+use ::ai;
 
 use termion::event::Key;
 use termion::input::TermRead;
@@ -109,7 +110,12 @@ impl Session {
                     }
                     _ => unimplemented!()
                 }
-            }
+            },
+            Key::Char('a') => {
+                if let Some(action) = ai::make_move(self.game().state()) {
+                    self.current_game.advance(action).expect("Illegal move found");
+                }
+            },
             _ => {}
         }
 

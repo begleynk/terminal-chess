@@ -1,4 +1,4 @@
-use piece::{Piece};
+use piece::{Piece, Rank};
 use Side;
 use board::{Board, Coordinate};
 use engine;
@@ -11,6 +11,7 @@ pub struct GameState {
     board: Board,
     captures: Vec<Piece>
 }
+
 
 #[allow(dead_code)] // TODO: Remove
 impl GameState {
