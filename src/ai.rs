@@ -1,5 +1,4 @@
 use Side;
-use board::{Board, Coordinate};
 use game::{GameState};
 use action::Action;
 use piece::{Piece, Rank};
@@ -77,6 +76,7 @@ fn evaluate_board(state: &mut GameState, my_side: Side) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use board::{Board, Coordinate};
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
@@ -121,15 +121,15 @@ mod tests {
         let action1 = make_move(&mut state);
         println!("{:?}", action1);
         println!("{:?}", state.board());
-        state.advance(action1.clone().unwrap());
+        state.advance(action1.clone().unwrap()).unwrap();
         let action2 = make_move(&mut state);
         println!("{:?}", action2);
         println!("{:?}", state.board());
-        state.advance(action2.clone().unwrap());
+        state.advance(action2.clone().unwrap()).unwrap();
         let action3 = make_move(&mut state);
         println!("{:?}", action3);
         println!("{:?}", state.board());
-        state.advance(action3.clone().unwrap());
+        state.advance(action3.clone().unwrap()).unwrap();
         let action4 = make_move(&mut state);
         println!("{:?}\n {:?}\n {:?}\n {:?}", action1, action2, action3, action4);
         println!("{:?}", state.board());

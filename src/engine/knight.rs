@@ -76,7 +76,7 @@ mod tests {
         let mut board = Board::empty();
         board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let piece = state.board().piece_at(coord!("d4")).unwrap();
         let from = Coordinate::from_human("d4".to_string()).unwrap();
@@ -102,9 +102,8 @@ mod tests {
         board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
         board.update(&coord!("b3"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
-        let piece = state.board().piece_at(coord!("a1")).unwrap();
         let from = Coordinate::from_human("a1".to_string()).unwrap();
 
         assert_eq!(
@@ -118,7 +117,7 @@ mod tests {
         let mut board = Board::empty();
         board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_moves(
             &coord!("a1"),
@@ -134,11 +133,11 @@ mod tests {
     #[test]
     fn can_capture_pieces() {
         let mut board = Board::empty();;
-        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight)));
-        board.update(&coord!("b3"), Some(Piece::pack(Side::Black, Rank::Pawn)));
-        board.update(&coord!("c2"), Some(Piece::pack(Side::Black, Rank::Pawn)));
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
+        board.update(&coord!("b3"), Some(Piece::pack(Side::Black, Rank::Pawn))).unwrap();
+        board.update(&coord!("c2"), Some(Piece::pack(Side::Black, Rank::Pawn))).unwrap();
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_captures(
             &coord!("a1"),

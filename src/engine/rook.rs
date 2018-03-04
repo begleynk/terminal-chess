@@ -73,7 +73,7 @@ mod tests {
         let mut board = Board::empty();
         board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
         board.update(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
 
         let valid_moves = possible_moves(&coord!("d4"), &state);
@@ -106,7 +106,7 @@ mod tests {
         board.update(&coord!("d6"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
         board.update(&coord!("g4"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let captures = possible_captures(&coord!("d4"), &state);
 

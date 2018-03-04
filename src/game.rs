@@ -1,4 +1,4 @@
-use piece::{Piece, Rank};
+use piece::{Piece};
 use Side;
 use board::{Board, Coordinate};
 use engine;
@@ -132,9 +132,9 @@ impl GameState {
     }
 
     pub fn evaluate_with_action<F, T>(&mut self, action: Action, evaluation_fn: F) -> T where F: Fn(&mut GameState) -> T {
-        self.advance(action);
+        self.advance(action).expect("Invalid action");
         let evaluation_result = evaluation_fn(self);
-        self.undo();
+        self.undo().expect("Invalid action");
         evaluation_result
     }
 
@@ -239,9 +239,9 @@ mod tests {
             Piece::pack(Side::White, Rank::Pawn),
             Coordinate::from_human("e2".to_owned()).unwrap(),
             Coordinate::from_human("e3".to_owned()).unwrap(),
-        ));
+        )).unwrap();
 
-        state.undo();
+        state.undo().unwrap();
 
         assert_eq!(state, GameState::new());
     }
@@ -262,9 +262,9 @@ mod tests {
             Piece::pack(Side::Black, Rank::Rook),
             Coordinate::from_human("h8".to_owned()).unwrap(),
             Coordinate::from_human("a1".to_owned()).unwrap(),
-        ));
+        )).unwrap();
 
-        new_state.undo();
+        new_state.undo().unwrap();
 
         assert_eq!(new_state, state);
     }
@@ -273,7 +273,7 @@ mod tests {
     fn undoing_without_a_history_is_a_noop() {
         let mut state = GameState::new();
 
-        state.undo();
+        state.undo().unwrap();
 
         assert_eq!(state, GameState::new());
     }

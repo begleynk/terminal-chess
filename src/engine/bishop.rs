@@ -93,7 +93,7 @@ mod tests {
         let mut board = Board::empty();
         board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
         board.update(&coord!("g7"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
 
         let valid_moves = possible_moves(&coord!("a1"), &state);
@@ -135,7 +135,7 @@ mod tests {
         let mut board = Board::empty();
         board.update(&coord!("a8"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
         board.update(&coord!("g2"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_moves(&coord!("a8"), &state);
 
@@ -176,7 +176,7 @@ mod tests {
         let mut board = Board::empty();
         board.update(&coord!("h8"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
         board.update(&coord!("f6"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_moves(&coord!("h8"), &state);
 
@@ -195,8 +195,8 @@ mod tests {
     #[test]
     fn moves_north_west_until_it_hits_something() {
         let mut board = Board::empty();
-        board.update(&coord!("h1"), Some(Piece::pack(Side::White, Rank::Bishop)));
-        let mut state = GameState::with_board(board);
+        board.update(&coord!("h1"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_moves(&coord!("h1"), &state);
 
@@ -252,7 +252,7 @@ mod tests {
         board.update(&coord!("c3"), Some(Piece::pack(Side::White, Rank::Pawn))).unwrap();
         board.update(&coord!("b2"), Some(Piece::pack(Side::Black, Rank::Pawn))).unwrap();
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_captures(&coord!("d4"), &state);
 

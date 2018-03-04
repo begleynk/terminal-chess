@@ -90,7 +90,7 @@ mod tests {
         board.update(&coord!("e4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // Next to the king
         board.update(&coord!("d5"), Some(Piece::pack(Side::Black, Rank::Pawn))).unwrap(); // Above the king
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_moves(&coord!("d4"), &state);
 
@@ -119,7 +119,7 @@ mod tests {
         board.update(&coord!("d5"), Some(Piece::pack(Side::Black, Rank::Pawn))).unwrap(); // Above the king
         board.update(&coord!("d2"), Some(Piece::pack(Side::Black, Rank::Pawn))).unwrap(); // Far away from the king
 
-        let mut state = GameState::with_board(board);
+        let state = GameState::with_board(board);
 
         let valid_moves = possible_captures(&coord!("d4"), &state);
 
