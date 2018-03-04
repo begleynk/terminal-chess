@@ -82,9 +82,9 @@ impl Session {
             Key::Char(' ') => {
                 match self.state {
                     SessionState::NothingSelected => {
-                        if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
-                            if piece.side() == self.game().state().next_to_move() {
-                                let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
+                        if let &Some(piece) = self.current_game.state().piece_at(self.cursor.to_coord()) {
+                            if piece.side() == self.current_game.state().next_to_move() {
+                                let possible_actions = self.current_game.state_mut().actions_at(self.cursor.to_coord());
                                 next_state = Some(SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions));
                             }
                         }
@@ -100,7 +100,7 @@ impl Session {
                         // We've found another piece, lets select it
                         } else if let &Some(piece) = self.game().state().piece_at(self.cursor.to_coord()) {
                             if piece.side() == self.game().state().next_to_move() {
-                                let possible_actions = self.game().state().actions_at(self.cursor.to_coord());
+                                let possible_actions = self.current_game.state_mut().actions_at(self.cursor.to_coord());
                                 next_state = Some(SessionState::CoordinateSelected(self.cursor.to_coord(), possible_actions));
                             }
                         // We've found an empty piece, clear selection
@@ -112,7 +112,7 @@ impl Session {
                 }
             },
             Key::Char('a') => {
-                if let Some(action) = ai::make_move(self.game().state()) {
+                if let Some(action) = ai::make_move(self.current_game.state_mut()) {
                     self.current_game.advance(action).expect("Illegal move found");
                 }
             },

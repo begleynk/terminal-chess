@@ -13,7 +13,7 @@ pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
 }
 
 pub fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
-    let side = state.next_to_move();
+    let side = state.piece_at(*from).unwrap().side();
     let mut moves = vec![];
     // North
     moves.append(&mut find_moves_in_direction(from, side, state.board(),|mover| mover.north()));
@@ -33,7 +33,7 @@ pub fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
 }
 
 fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
-    let side = state.next_to_move();
+    let side = state.piece_at(*from).unwrap().side();
     let piece_n =
         find_opposing_piece_in_direction(from, side, state.board(), |mover| mover.north());
     let piece_e =
@@ -70,11 +70,11 @@ mod tests {
 
     #[test]
     fn moves_in_straight_lines_until_it_hits_something() {
-        let mut state = GameState::new();
-        state.set_board(Board::empty());
+        let mut board = Board::empty();
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        board.update(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way
+        let mut state = GameState::with_board(board);
 
-        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
-        state.update_board(&coord!("g4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way
 
         let valid_moves = possible_moves(&coord!("d4"), &state);
 
@@ -96,17 +96,17 @@ mod tests {
 
     #[test]
     fn captures_in_straight_lines() {
-        let mut state = GameState::new();
-        state.set_board(Board::empty());
+        let mut board = Board::empty();
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
 
-        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        board.update(&coord!("b4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way of the piece below
+        board.update(&coord!("a4"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
 
-        state.update_board(&coord!("b4"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap(); // In the way of the piece below
-        state.update_board(&coord!("a4"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
+        board.update(&coord!("d1"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
+        board.update(&coord!("d6"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
+        board.update(&coord!("g4"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
 
-        state.update_board(&coord!("d1"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
-        state.update_board(&coord!("d6"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
-        state.update_board(&coord!("g4"), Some(Piece::pack(Side::Black, Rank::Bishop))).unwrap();
+        let mut state = GameState::with_board(board);
 
         let captures = possible_captures(&coord!("d4"), &state);
 

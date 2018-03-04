@@ -14,19 +14,20 @@ pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
 
 fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
+    let side = state.piece_at(*from).unwrap().side();
 
+    // TODO: Consider refactoring this mess
+    let one_square_forward = Mover::new(side)
+                                .move_to(from)
+                                .north()
+                                .make();
     // Moves forward
-    moves.push(
-        Mover::new(state.next_to_move())
-            .move_to(from)
-            .north()
-            .make(),
-    );
+    moves.push(one_square_forward.clone());
 
-    if is_starting_coordinate(from, state.next_to_move()) {
+    if is_starting_coordinate(from, side) && state.board().is_empty(one_square_forward.unwrap()) {
         // Moves forward twice
         moves.push(
-            Mover::new(state.next_to_move())
+            Mover::new(side)
                 .move_to(from)
                 .north()
                 .north()
@@ -44,16 +45,17 @@ fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
 
 fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
+    let side = state.piece_at(*from).unwrap().side();
 
     moves.push(
-        Mover::new(state.next_to_move())
+        Mover::new(side)
             .move_to(from)
             .north()
             .east()
             .make(),
     );
     moves.push(
-        Mover::new(state.next_to_move())
+        Mover::new(side)
             .move_to(from)
             .north()
             .west()
@@ -83,7 +85,6 @@ fn is_starting_coordinate(coordinate: &Coordinate, side: Side) -> bool {
 mod tests {
     use super::*;
     use board::Board;
-    use engine;
     use piece::{Piece, Rank};
 
     macro_rules! coord {
@@ -98,7 +99,7 @@ mod tests {
         let from = coord!("e2");
         let to = coord!("e3");
 
-        assert_eq!(engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state), Ok(()));
+        assert_eq!(state.advance(Action::MovePiece(piece.clone(), from.clone(), to.clone())), Ok(()));
         assert_eq!(state.board().piece_at(coord!("e3")), &Some(piece));
         assert_eq!(state.history().len(), 1, "History not updated");
         assert_eq!(state.next_to_move(), Side::Black, "Side not updated");
@@ -112,92 +113,63 @@ mod tests {
         let from = coord!("e2");
         let to = coord!("e4");
 
-        assert_eq!(engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state), Ok(()));
+        assert_eq!(state.advance(Action::MovePiece(piece.clone(), from.clone(), to.clone())), Ok(()));
         assert_eq!(state.board().piece_at(coord!("e4")), &Some(piece));
         assert_eq!(state.history().len(), 1, "History not updated");
     }
 
     #[test]
     fn cannot_move_ahead_if_the_pawn_is_blocked() {
-        let mut state = GameState::new();
+        let mut board = Board::empty();
+        board.update(&coord!("e2"), Some(Piece::pack(Side::White, Rank::Pawn)));
+        board.update(&coord!("e3"), Some(Piece::pack(Side::Black, Rank::Bishop))); // Bishop blocking on e3
 
-        assert_eq!(
-            state.update_board(&coord!("e3"), Some(Piece::pack(Side::Black, Rank::Bishop)),),
-            Ok(())
-        ); // Bishop blocking on e3
-
-        let piece = state.board().piece_at(coord!("e2")).unwrap();
+        let piece = board.piece_at(coord!("e2")).unwrap();
         let from = coord!("e2");
-        let to = coord!("e3");
+
+        let mut state = GameState::with_board(board);
 
         assert_eq!(
-            engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
-            Err("Invalid move".to_string())
-        );
-        assert_eq!(
-            state.board().piece_at(coord!("e3")),
-            &Some(Piece::pack(Side::Black, Rank::Bishop))
-        );
-        assert_eq!(
-            state.history().len(),
-            0,
-            "History updated when it should not have"
+            possible_moves(&from, &state),
+            vec![]
         );
     }
 
     #[test]
     fn cannot_move_two_places_if_not_on_starting_row() {
-        let mut state = GameState::new();
-
-        // Move pawn to e3
-        assert_eq!(
-            engine::apply_action(&Action::MovePiece(state.piece_at(coord!("e2")).unwrap().clone(), coord!("e2"), coord!("e3")), &mut state),
-            Ok(())
-        );
-        // Random black move
-        assert_eq!(
-            engine::apply_action(&Action::MovePiece(state.piece_at(coord!("b7")).unwrap().clone(), coord!("b7"), coord!("b6")), &mut state),
-            Ok(())
-        );
-
-        // Try to move e3 to e5
-        let piece = state.board().piece_at(coord!("e3")).unwrap();
-        let from = coord!("e3");
-        let to = coord!("e5");
+        let mut board = Board::empty();
+        board
+            .update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn)))
+            .unwrap();
+        let mut state = GameState::with_board(board);
 
         assert_eq!(
-            engine::apply_action(&Action::MovePiece(piece.clone(), from.clone(), to.clone()), &mut state),
-            Err("Invalid move".to_string())
-        );
-        assert_eq!(state.board().piece_at(coord!("e4")), &None);
-        assert_eq!(
-            state.history().len(),
-            2,
-            "History updated when it should not have"
+            possible_moves(&coord!("d4"), &state),
+            vec![Action::MovePiece(Piece::pack(Side::White, Rank::Pawn), coord!("d4"), coord!("d5"))]
         );
     }
 
     #[test]
     fn can_capture_diagonally() {
-        let mut state = GameState::new();
-        state.set_board(Board::empty());
+        let mut board = Board::empty();
 
-        state
-            .update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn)))
+        board
+            .update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn)))
             .unwrap();
-        state
-            .update_board(&coord!("e5"), Some(Piece::pack(Side::Black, Rank::Knight)))
+        board
+            .update(&coord!("e5"), Some(Piece::pack(Side::Black, Rank::Knight)))
             .unwrap(); // In the way
 
+        let mut state = GameState::with_board(board);
+
         assert_eq!(
-            engine::apply_action(
-                &Action::Capture(
+            state.advance(
+                Action::Capture(
                     Piece::pack(Side::White, Rank::Pawn),
                     Piece::pack(Side::Black, Rank::Knight),
                     coord!("d4"),
                     coord!("e5"),
                 ),
-                &mut state
             ),
             Ok(())
         );
@@ -208,23 +180,16 @@ mod tests {
         );
         assert_eq!(state.piece_at(coord!("d4")), &None);
         assert_eq!(state.history().len(), 1);
-        assert_eq!(
-            state.captures(),
-            &vec![Piece::pack(Side::Black, Rank::Knight)]
-        )
     }
 
     #[test]
     fn finds_correct_captures() {
-        let mut state = GameState::new();
-        state.set_board(Board::empty());
+        let mut board = Board::empty();
 
-        state
-            .update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn)))
-            .unwrap();
-        state
-            .update_board(&coord!("e5"), Some(Piece::pack(Side::Black, Rank::Knight)))
-            .unwrap(); // In the way
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::Pawn))).unwrap();
+        board.update(&coord!("e5"), Some(Piece::pack(Side::Black, Rank::Knight))).unwrap(); // In the way
+
+        let mut state = GameState::with_board(board);
 
         let captures = possible_captures(&coord!("d4"), &state);
 

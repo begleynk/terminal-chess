@@ -6,44 +6,44 @@ use piece::{Piece, Rank};
 use engine;
 
 
-pub fn make_move(state: &GameState) -> Option<Action> {
+pub fn make_move(state: &mut GameState) -> Option<Action> {
     root_alpha_beta(state)
 }
 
-pub fn root_alpha_beta(state: &GameState) -> Option<Action> {
+pub fn root_alpha_beta(state: &mut GameState) -> Option<Action> {
     let side = state.next_to_move();
     let action = possible_actions(state, side).into_iter().max_by_key(|action| {
-        let mut new_state = state.clone();
-        engine::apply_action(&action, &mut new_state).unwrap();
-        let score = -alpha_beta(3, &new_state, side, <i32>::min_value()+1, <i32>::max_value());
-        score
+        state.evaluate_with_action(action.clone(), |mut new_state| {
+            -alpha_beta(3, &mut new_state, side, <i32>::min_value()+1, <i32>::max_value())
+        })
     });
     action
 }
 
-fn possible_actions(state: &GameState, side: Side) -> Vec<Action> {
+fn possible_actions(state: &mut GameState, side: Side) -> Vec<Action> {
     state.board().pieces_with_coordinates()
         .into_iter()
         .filter(|&(_coordinate, piece)| piece.side() == side)
         .map(|(coordinate, _piece)| coordinate)
-        .flat_map(|coordinate| state.actions_at(coordinate))
+        .flat_map(|coordinate| engine::enumerate_all_actions(&coordinate, state))
         .collect()
 }
 
 
-fn alpha_beta(depth: u8, state: &GameState, my_side: Side, mut alpha: i32, beta: i32) -> i32 {
-    let mut actions = possible_actions(state, state.next_to_move());
+fn alpha_beta(depth: u8, state: &mut GameState, my_side: Side, mut alpha: i32, beta: i32) -> i32 {
+    let next_to_move = state.next_to_move();
+    let mut actions = possible_actions(state, next_to_move);
     actions.sort_by_key(|&a| { match a { Action::Capture(_, _, _, _) => 1, _ => 2 } });
     if depth == 0 || actions.is_empty() {
-        return evaluate_board(state, state.next_to_move()) - depth as i32; // penalty for games that end early
+        return evaluate_board(state, next_to_move) - depth as i32; // penalty for games that end early
     }
 
     let mut score = <i32>::min_value()+1;
 
     for action in actions {
-        let mut new_state = state.clone();
-        engine::apply_action(&action, &mut new_state).unwrap();
-        let value = -alpha_beta(depth - 1, &new_state, my_side, -beta, -alpha);
+        let value = state.evaluate_with_action(action.clone(), |mut new_state| {
+            -alpha_beta(depth - 1, &mut new_state, my_side, -beta, -alpha)
+        });
         if value > score { score = value; }
         if score > alpha { alpha = score; }
         if score >= beta { break; }
@@ -64,7 +64,7 @@ fn evaluate_piece(piece: Piece, my_side: Side) -> i32 {
     if piece.side() == my_side { score } else { -score }
 }
 
-fn evaluate_board(state: &GameState, my_side: Side) -> i32 {
+fn evaluate_board(state: &mut GameState, my_side: Side) -> i32 {
     let material_score: i32 = state.board().pieces_with_coordinates()
         .into_iter()
         .map(|(_coordinate, piece)| evaluate_piece(piece, my_side))
@@ -99,66 +99,40 @@ mod tests {
 
     #[test]
     fn makes_the_obvious_move() {
-        let mut state = GameState::new();
         let mut board = Board::empty();
         board.update(&coord!("b5"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
         board.update(&coord!("e8"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
-        state.set_board(board);
-        let action = make_move(&state);
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        let mut state = GameState::with_board(board);
+        let action = make_move(&mut state);
 
         assert!(matches!(action, Some(Action::Capture(_, _, _, _))));
     }
 
     #[test]
-    fn tries_not_to_die() {
-        let mut state = GameState::new();
-        let mut board = Board::empty();
-        board.update(&coord!("e4"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
-        board.update(&coord!("a5"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
-        board.update(&coord!("a3"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
-        board.update(&coord!("f8"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
-        state.set_board(board);
-        let action = make_move(&state);
-        let from = &coord!("e4");
-        let to = &coord!("d4");
-
-        assert!(matches!(action, Some(Action::MovePiece(_, from, to))));
-    }
-
-    #[test]
-    fn never_ends_the_game_with_two_kings() {
-        let mut state = GameState::new();
-        let mut board = Board::empty();
-        board.update(&coord!("e4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
-        board.update(&coord!("f8"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
-        state.set_board(board);
-        for _ in 0..500 {
-            let action = make_move(&state);
-            engine::apply_action(&action.unwrap(), &mut state);
-
-            assert!(matches!(action, Some(Action::MovePiece(_, _, _))));
-        }
-    }
-
-    #[test]
     fn queen_wins_with_two_moves() {
-        let mut state = GameState::new();
         let mut board = Board::empty();
         board.update(&coord!("a5"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
         board.update(&coord!("g8"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
         board.update(&coord!("h1"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
-        state.set_board(board);
-        let action1 = make_move(&state);
+        board.update(&coord!("a1"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
+        let mut state = GameState::with_board(board);
+        println!("{:?}", state.board());
+        let action1 = make_move(&mut state);
         println!("{:?}", action1);
-        engine::apply_action(&action1.unwrap(), &mut state);
-        let action2 = make_move(&state);
+        println!("{:?}", state.board());
+        state.advance(action1.clone().unwrap());
+        let action2 = make_move(&mut state);
         println!("{:?}", action2);
-        engine::apply_action(&action2.unwrap(), &mut state);
-        let action3 = make_move(&state);
+        println!("{:?}", state.board());
+        state.advance(action2.clone().unwrap());
+        let action3 = make_move(&mut state);
         println!("{:?}", action3);
-        engine::apply_action(&action3.unwrap(), &mut state);
-        let action4 = make_move(&state);
+        println!("{:?}", state.board());
+        state.advance(action3.clone().unwrap());
+        let action4 = make_move(&mut state);
         println!("{:?}\n {:?}\n {:?}\n {:?}", action1, action2, action3, action4);
+        println!("{:?}", state.board());
 
         assert!(matches!(action4, Some(Action::Capture(_, _, _, _))));
     }

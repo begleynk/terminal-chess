@@ -43,7 +43,6 @@ impl Piece {
             i => panic!(format!("Unknown rank {:08b}", i))
         }
     }
-
 }
 
 impl fmt::Debug for Piece {

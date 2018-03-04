@@ -4,7 +4,7 @@ use fmt;
 
 #[derive(PartialEq, Clone)]
 pub struct Board {
-    pub data: [[Option<Piece>; 8]; 8],
+    data: [[Option<Piece>; 8]; 8],
 }
 
 impl Board {

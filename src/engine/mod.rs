@@ -12,77 +12,16 @@ mod rook;
 mod queen;
 mod king;
 
-pub fn apply_action(action: &Action, state: &mut GameState) -> Result<(), String> {
-    match *action {
-        Action::MovePiece(piece, from, to) => {
-            let possible_moves: Vec<Action> = possible_actions(&from, &state)
-                .into_iter()
-                .filter(|a| match *a {
-                    Action::MovePiece(_, _, _) => true,
-                    _ => false,
-                })
-                .collect();
-
-            // Check this is indeed a valid move
-            if let Some(_) = possible_moves
-                .into_iter()
-                .find(|a| action_matches_coordinate(&a, &to))
-            {
-                state
-                    .update_board(&to, Some(piece.clone()))
-                    .expect("Bad move found. Bug");
-                state
-                    .update_board(&from, None)
-                    .expect("Bad move found. Bug");
-                state.add_action_to_history(
-                    Action::MovePiece(piece.clone(), from.clone(), to.clone()),
-                );
-                state.toggle_side();
-
-                Ok(())
-            } else {
-                Err("Invalid move".to_string())
-            }
-        }
-        Action::Capture(capturer, target, from, to) => {
-            let possible_captures: Vec<Action> =
-                possible_actions(&from, &state)
-                    .into_iter()
-                    .filter(|a| match *a {
-                        Action::Capture(_, _, _, _) => true,
-                        _ => false,
-                    })
-                    .collect();
-
-            if let Some(_) = possible_captures
-                .into_iter()
-                .find(|a| action_matches_coordinate(&a, &to))
-            {
-                state
-                    .update_board(&to, Some(capturer.clone()))
-                    .expect("Bad move found. Bug");
-                state
-                    .update_board(&from, None)
-                    .expect("Bad move found. Bug");
-                state.add_piece_to_capture_list(target.clone());
-                state.add_action_to_history(Action::Capture(
-                    capturer.clone(),
-                    target.clone(),
-                    from.clone(),
-                    to.clone(),
-                ));
-                state.toggle_side();
-
-                Ok(())
-            } else {
-                Err("Invalid capture".to_string())
-            }
-        }
-        _ => unimplemented!(),
-    }
+pub fn possible_actions(
+    from: &Coordinate,
+    state: &mut GameState,
+) -> Vec<Action> {
+    enumerate_all_actions(from, state).into_iter()
+        .filter(|action| leads_out_of_check(action, state))
+        .collect()
 }
 
-pub fn possible_actions(
+pub fn enumerate_all_actions(
     from: &Coordinate,
     state: &GameState,
 ) -> Vec<Action> {
@@ -98,6 +37,35 @@ pub fn possible_actions(
     } else {
         vec![]
     }
+}
+
+fn leads_out_of_check(action: &Action, state: &mut GameState) -> bool {
+    let next_to_move = state.next_to_move();
+    state.evaluate_with_action(action.clone(), |new_state| !is_in_check(&new_state, next_to_move))
+}
+
+pub fn is_in_check(state: &GameState, side: Side) -> bool {
+    let my_king = Piece::pack(side, Rank::King);
+    let all_my_king_coordinates = state.board().find_pieces(my_king);
+
+    let king_coordinate = all_my_king_coordinates.get(0).expect("No king on the board");
+
+    state.board().pieces_with_coordinates()
+        .into_iter()
+        .filter(|&(_coordinate, piece)| piece.side() != side)
+        .flat_map(|(coordinate, _piece)| enumerate_all_actions(&coordinate, &state))
+        .any(|action| action_matches_coordinate(&action, &king_coordinate))
+}
+
+pub fn is_in_checkmate(state: &mut GameState, side: Side) -> bool {
+    let my_coords_and_pieces = state.board().pieces_with_coordinates()
+                                .into_iter()
+                                .filter(|&(_coordinate, piece)| piece.side() == side)
+                                .collect::<Vec<(Coordinate, Piece)>>();
+
+    my_coords_and_pieces
+        .into_iter()
+        .all(|(coordinate, _piece)| possible_actions(&coordinate, state).is_empty())
 }
 
 fn action_matches_coordinate(action: &Action, coord: &Coordinate) -> bool {
@@ -235,19 +203,6 @@ where
     result
 }
 
-pub fn is_in_check(state: &GameState) -> bool {
-    let my_king = Piece::pack(state.next_to_move(), Rank::King);
-    let all_my_king_coordinates = state.board().find_pieces(my_king);
-
-    let king_coordinate = all_my_king_coordinates.get(0).expect("No king on the board");
-
-    state.board().pieces_with_coordinates()
-        .into_iter()
-        .filter(|&(_coordinate, piece)| piece.side() != state.next_to_move())
-        .flat_map(|(coordinate, _piece)| possible_actions(&coordinate, &state.peek_into_the_future()))
-        .any(|action| action_matches_coordinate(&action, &king_coordinate))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -259,24 +214,24 @@ mod tests {
 
     #[test]
     fn can_detect_check() {
-        let mut state = GameState::new();
-        state.set_board(Board::empty());
+        let mut board = Board::empty();
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        board.update(&coord!("e4"), Some(Piece::pack(Side::Black, Rank::Queen))).unwrap();
+        let mut state = GameState::with_board(board);
 
-        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
-        state.update_board(&coord!("e4"), Some(Piece::pack(Side::Black, Rank::Queen))).unwrap();
-
-        assert!(is_in_check(&state));
+        assert!(is_in_check(&mut state, Side::White));
     }
 
     #[test]
     fn can_detect_when_not_in_check() {
-        let mut state = GameState::new();
-        state.set_board(Board::empty());
+        let mut board = Board::empty();
 
-        state.update_board(&coord!("d4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
-        state.update_board(&coord!("a1"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
+        board.update(&coord!("d4"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        board.update(&coord!("a1"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
 
-        assert!(!is_in_check(&state));
+        let mut state = GameState::with_board(board);
+
+        assert!(!is_in_check(&mut state, Side::White));
     }
 
     #[test]
@@ -303,6 +258,40 @@ mod tests {
             Coordinate::from_human("b5".to_owned()).unwrap(),
         )).unwrap();
 
-        assert!(is_in_check(game.state()));
+        assert!(is_in_check(game.state(), Side::Black));
+    }
+
+    #[test]
+    fn prunes_moves_that_do_not_get_the_player_out_of_check() {
+        let mut board = Board::empty();
+
+        board.update(&coord!("a2"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
+        board.update(&coord!("h1"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        board.update(&coord!("h8"), Some(Piece::pack(Side::Black, Rank::Queen))).unwrap();
+        board.update(&coord!("g1"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+
+        let mut state = GameState::with_board(board);
+
+        assert_eq!(possible_actions(&coord!("h1"), &mut state), vec![
+          Action::MovePiece(
+            Piece::pack(Side::White, Rank::King),
+            Coordinate::from_human("h1".to_owned()).unwrap(),
+            Coordinate::from_human("g2".to_owned()).unwrap()
+          )
+        ]);
+    }
+
+    #[test]
+    fn detects_checkmate() {
+        let mut board = Board::empty();
+
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        board.update(&coord!("h1"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
+        board.update(&coord!("b2"), Some(Piece::pack(Side::Black, Rank::Queen))).unwrap();
+        board.update(&coord!("d2"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
+
+        let mut state = GameState::with_board(board);
+
+        assert!(is_in_checkmate(&mut state, Side::White));
     }
 }
