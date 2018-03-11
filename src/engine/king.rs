@@ -1,12 +1,17 @@
 use game::{GameState};
-use action::Action;
+use action::{Action, CastleSide};
 use board::{Coordinate};
-use engine::{Mover};
+use engine::{Mover, is_in_check, opponent_can_capture};
+use piece::{Piece, Rank};
 
 pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let mut actions = vec![];
     actions.append(&mut possible_moves(from, state));
     actions.append(&mut possible_captures(from, state));
+
+    if can_castle_queen_side(state) {
+        actions.push(Action::Castle(CastleSide::QueenSide))
+    }
 
     actions
 }
@@ -72,6 +77,35 @@ pub fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
     .collect()
 }
 
+fn can_castle_queen_side(state: &GameState) -> bool {
+    let my_side = state.next_to_move();
+    let actions = state.history().into_iter().filter(|action| {
+        match **action {
+            Action::MovePiece(piece, _, _) => {
+                (piece.rank() == Rank::King || piece.rank() == Rank::Rook) &&
+                    piece.side() == my_side
+            },
+            _ => false,
+        }
+    }).collect::<Vec<&Action>>();
+
+    let blocking_squares = [
+        Coordinate::from_human("b1".to_owned()).unwrap(),
+        Coordinate::from_human("c1".to_owned()).unwrap(),
+        Coordinate::from_human("d1".to_owned()).unwrap(),
+    ]; 
+
+    let in_flight_squares = [
+        Coordinate::from_human("c1".to_owned()).unwrap(),
+        Coordinate::from_human("d1".to_owned()).unwrap(),
+    ]; 
+
+    !is_in_check(state, my_side)
+        && actions.is_empty()
+        && blocking_squares.into_iter().all(|coord| state.board().is_empty(*coord))
+        && !in_flight_squares.into_iter().any(|coord| opponent_can_capture(coord, my_side, state))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -127,5 +161,78 @@ mod tests {
             // North
             Action::Capture(Piece::pack(Side::White, Rank::King), Piece::pack(Side::Black, Rank::Pawn), coord!("d4"), coord!("d5")),
         ]);
+    }
+
+    #[test]
+    fn cannot_castle_when_in_check() {
+        let mut board = Board::empty();
+        board.update(&coord!("e1"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        board.update(&coord!("e8"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
+
+        let state = GameState::with_board(board);
+        assert!(!can_castle_queen_side(&state))
+     
+    }
+
+    #[test]
+    fn can_castle_if_king_and_rook_havent_moved_before() {
+        let mut board = Board::empty();
+        let white_king = Piece::pack(Side::White, Rank::King);
+        let black_king = Piece::pack(Side::Black, Rank::King);
+        board.update(&coord!("e1"), Some(white_king)).unwrap();
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        board.update(&coord!("e8"), Some(black_king)).unwrap();
+
+        let mut state = GameState::with_board(board);
+        assert!(can_castle_queen_side(&state));
+
+        state.advance(Action::MovePiece(white_king, coord!("e1"), coord!("e2")));
+        state.advance(Action::MovePiece(black_king, coord!("e8"), coord!("e7")));
+     
+        assert!(!can_castle_queen_side(&state));
+    }
+
+    #[test]
+    fn cannot_castle_if_nonempty_squares_in_between() {
+        let mut board = Board::empty();
+        let white_king = Piece::pack(Side::White, Rank::King);
+        board.update(&coord!("e1"), Some(white_king)).unwrap();
+        board.update(&coord!("b1"), Some(Piece::pack(Side::White, Rank::Knight))).unwrap();
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+
+        let state = GameState::with_board(board);
+
+        assert!(!can_castle_queen_side(&state));
+    }
+
+
+    #[test]
+    fn cannot_castle_if_opponent_can_capture_king_in_flight() {
+        let mut board = Board::empty();
+        let white_king = Piece::pack(Side::White, Rank::King);
+        board.update(&coord!("e1"), Some(white_king)).unwrap();
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        board.update(&coord!("d8"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
+
+        let state = GameState::with_board(board);
+
+        assert!(!can_castle_queen_side(&state));
+    }
+
+    #[test]
+    fn includes_possible_castle_actions() {
+        let mut board = Board::empty();
+        let white_king = Piece::pack(Side::White, Rank::King);
+        let black_king = Piece::pack(Side::Black, Rank::King);
+        board.update(&coord!("e1"), Some(white_king)).unwrap();
+        board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::Rook))).unwrap();
+        //board.update(&coord!("e8"), Some(black_king)).unwrap();
+
+        let state = GameState::with_board(board);
+
+        let actions = possible_actions(&coord!("e1"), &state);
+
+        assert!(actions.contains(&Action::Castle(CastleSide::QueenSide)))
     }
 }

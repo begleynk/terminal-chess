@@ -1,9 +1,10 @@
 [ ] Promotions
 [ ] Castling
-[ ] Check!
+[x] Check!
     - Force player prevent check if possible
-[ ] Ending the game
+[x] Ending the game
     - AKA, checkmate
+[ ] Stalemate
 
 Later:
 [ ] Multiplayer

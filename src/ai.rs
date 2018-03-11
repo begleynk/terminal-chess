@@ -13,7 +13,7 @@ pub fn root_alpha_beta(state: &mut GameState) -> Option<Action> {
     let side = state.next_to_move();
     let action = possible_actions(state, side).into_iter().max_by_key(|action| {
         state.evaluate_with_action(action.clone(), |mut new_state| {
-            -alpha_beta(3, &mut new_state, side, <i32>::min_value()+1, <i32>::max_value())
+            -alpha_beta(4, &mut new_state, side, <i32>::min_value()+1, <i32>::max_value())
         })
     });
     action
@@ -80,21 +80,6 @@ mod tests {
 
     macro_rules! coord {
         ($x:expr) => { Coordinate::from_human($x.to_string()).unwrap() }
-    }
-
-    macro_rules! matches {
-        ($expression: expr, $($pattern:tt)+) => {
-            _tt_as_expr_hack! {
-                match $expression {
-                    $($pattern)+ => true,
-                    _ => false
-                }
-            }
-        }
-    }
-
-    macro_rules! _tt_as_expr_hack {
-            ($value:expr) => ($value)
     }
 
     #[test]

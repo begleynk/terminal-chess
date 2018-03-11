@@ -44,17 +44,21 @@ fn leads_out_of_check(action: &Action, state: &mut GameState) -> bool {
     state.evaluate_with_action(action.clone(), |new_state| !is_in_check(&new_state, next_to_move))
 }
 
+pub fn opponent_can_capture(coord: &Coordinate, my_side: Side, state: &GameState) -> bool {
+    state.board().pieces_with_coordinates()
+        .into_iter()
+        .filter(|&(_coordinate, piece)| piece.side() != my_side)
+        .flat_map(|(coordinate, _piece)| enumerate_all_actions(&coordinate, &state))
+        .any(|action| action_matches_coordinate(&action, coord))
+}
+
 pub fn is_in_check(state: &GameState, side: Side) -> bool {
     let my_king = Piece::pack(side, Rank::King);
     let all_my_king_coordinates = state.board().find_pieces(my_king);
 
     let king_coordinate = all_my_king_coordinates.get(0).expect("No king on the board");
 
-    state.board().pieces_with_coordinates()
-        .into_iter()
-        .filter(|&(_coordinate, piece)| piece.side() != side)
-        .flat_map(|(coordinate, _piece)| enumerate_all_actions(&coordinate, &state))
-        .any(|action| action_matches_coordinate(&action, &king_coordinate))
+    opponent_can_capture(&king_coordinate, side, state)
 }
 
 pub fn is_in_checkmate(state: &mut GameState, side: Side) -> bool {
@@ -72,7 +76,7 @@ fn action_matches_coordinate(action: &Action, coord: &Coordinate) -> bool {
     match *action {
         Action::MovePiece(_, __, to) => *coord == to,
         Action::Capture(_, _, _, to) => *coord == to,
-        Action::Promotion(_, _, _, to) => *coord == to,
+        _ => false,
     }
 }
 

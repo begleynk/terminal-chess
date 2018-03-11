@@ -8,6 +8,13 @@ pub enum Action {
     MovePiece(Piece, Coordinate, Coordinate),
     Capture(Piece, Piece, Coordinate, Coordinate),
     Promotion(Piece, Piece, Coordinate, Coordinate),
+    Castle(CastleSide),
+}
+
+#[derive(PartialEq, Clone, Copy)]
+pub enum CastleSide {
+    KingSide,
+    QueenSide
 }
 
 pub fn to_coordinate_for(action: &Action) -> &Coordinate {

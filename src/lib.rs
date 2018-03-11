@@ -1,5 +1,21 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
+
+macro_rules! _tt_as_expr_hack {
+    ($value:expr) => ($value)
+}
+
+macro_rules! matches {
+    ($expression: expr, $($pattern:tt)+) => {
+        _tt_as_expr_hack! {
+            match $expression {
+                $($pattern)+ => true,
+                _ => false
+            }
+        }
+    }
+}
+
 extern crate termion;
 mod piece;
 mod game;
