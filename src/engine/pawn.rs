@@ -12,7 +12,7 @@ pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
     actions
 }
 
-fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
+pub fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
     let side = state.piece_at(*from).unwrap().side();
 
@@ -43,7 +43,7 @@ fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
         .collect()
 }
 
-fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
+pub fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let mut moves: Vec<Result<Coordinate, String>> = Vec::new();
     let side = state.piece_at(*from).unwrap().side();
 

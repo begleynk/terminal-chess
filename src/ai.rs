@@ -86,7 +86,8 @@ mod tests {
     fn makes_the_obvious_move() {
         let mut board = Board::empty();
         board.update(&coord!("b5"), Some(Piece::pack(Side::White, Rank::Bishop))).unwrap();
-        board.update(&coord!("e8"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
+        board.update(&coord!("e8"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
+        board.update(&coord!("h8"), Some(Piece::pack(Side::Black, Rank::King))).unwrap();
         board.update(&coord!("a1"), Some(Piece::pack(Side::White, Rank::King))).unwrap();
         let mut state = GameState::with_board(board);
         let action = make_move(&mut state);

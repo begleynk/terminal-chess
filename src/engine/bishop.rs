@@ -52,7 +52,7 @@ pub fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
         .collect()
 }
 
-fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
+pub fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let side = state.piece_at(*from).unwrap().side();
     let piece_ne =
         find_opposing_piece_in_direction(from, side, state.board(), |mover| mover.north().east());

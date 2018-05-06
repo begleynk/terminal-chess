@@ -23,7 +23,7 @@ fn possible_moves(from: &Coordinate, state: &GameState) -> Vec<Action> {
         .collect()
 }
 
-fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
+pub fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
     let side = state.piece_at(*from).unwrap().side();
     let moves = knight_moves(from, side);
 

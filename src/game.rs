@@ -55,14 +55,6 @@ impl GameState {
         engine::is_in_checkmate(self, side)
     }
 
-    pub fn peek_into_the_future(&self) -> GameState {
-        GameState {
-            next_to_move: !self.next_to_move,
-            history: self.history.clone(),
-            board: self.board.clone()
-        }
-    }
-
     pub fn advance(&mut self, action: Action) -> Result<(), String> {
         match action {
             Action::MovePiece(piece, from, to) => {

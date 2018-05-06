@@ -2,14 +2,16 @@ use game::{GameState};
 use action::{Action, CastleSide};
 use board::{Coordinate};
 use engine::{Mover, is_in_check, opponent_can_capture};
-use piece::{Piece, Rank};
+use piece::{Rank};
+use Side;
 
 pub fn possible_actions(from: &Coordinate, state: &GameState) -> Vec<Action> {
+    println!("possible_actions {:?}", from);
     let mut actions = vec![];
     actions.append(&mut possible_moves(from, state));
     actions.append(&mut possible_captures(from, state));
 
-    if can_castle_queen_side(state) {
+    if can_castle_queen_side(state, state.piece_at(*from).unwrap().side()) {
         actions.push(Action::Castle(CastleSide::QueenSide))
     }
 
@@ -77,8 +79,8 @@ pub fn possible_captures(from: &Coordinate, state: &GameState) -> Vec<Action> {
     .collect()
 }
 
-fn can_castle_queen_side(state: &GameState) -> bool {
-    let my_side = state.next_to_move();
+fn can_castle_queen_side(state: &GameState, my_side: Side) -> bool {
+    println!("next to move {:?}", state.next_to_move());
     let actions = state.history().into_iter().filter(|action| {
         match **action {
             Action::MovePiece(piece, _, _) => {
@@ -171,7 +173,7 @@ mod tests {
         board.update(&coord!("e8"), Some(Piece::pack(Side::Black, Rank::Rook))).unwrap();
 
         let state = GameState::with_board(board);
-        assert!(!can_castle_queen_side(&state))
+        assert!(!can_castle_queen_side(&state, Side::White))
      
     }
 
@@ -185,12 +187,12 @@ mod tests {
         board.update(&coord!("e8"), Some(black_king)).unwrap();
 
         let mut state = GameState::with_board(board);
-        assert!(can_castle_queen_side(&state));
+        assert!(can_castle_queen_side(&state, Side::White));
 
         state.advance(Action::MovePiece(white_king, coord!("e1"), coord!("e2")));
         state.advance(Action::MovePiece(black_king, coord!("e8"), coord!("e7")));
      
-        assert!(!can_castle_queen_side(&state));
+        assert!(!can_castle_queen_side(&state, Side::White));
     }
 
     #[test]
@@ -203,7 +205,7 @@ mod tests {
 
         let state = GameState::with_board(board);
 
-        assert!(!can_castle_queen_side(&state));
+        assert!(!can_castle_queen_side(&state, Side::White));
     }
 
 
@@ -217,7 +219,7 @@ mod tests {
 
         let state = GameState::with_board(board);
 
-        assert!(!can_castle_queen_side(&state));
+        assert!(!can_castle_queen_side(&state, Side::White));
     }
 
     #[test]

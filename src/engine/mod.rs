@@ -25,6 +25,7 @@ pub fn enumerate_all_actions(
     from: &Coordinate,
     state: &GameState,
 ) -> Vec<Action> {
+    println!("enumerate_all_actions {:?}", from);
     if let &Some(piece) = state.piece_at(*from) {
         match piece.rank() {
             Rank::Pawn => pawn::possible_actions(from, state),
@@ -39,16 +40,36 @@ pub fn enumerate_all_actions(
     }
 }
 
+pub fn enumerate_all_captures(
+    from: &Coordinate,
+    state: &GameState,
+) -> Vec<Action> {
+    println!("enumerate_all_captures {:?}", from);
+    if let &Some(piece) = state.piece_at(*from) {
+        match piece.rank() {
+            Rank::Pawn => pawn::possible_captures(from, state),
+            Rank::Knight => knight::possible_captures(from, state),
+            Rank::Bishop => bishop::possible_captures(from, state),
+            Rank::Rook => rook::possible_captures(from, state),
+            Rank::Queen => queen::possible_captures(from, state),
+            Rank::King => king::possible_captures(from, state)
+        }
+    } else {
+        vec![]
+    }
+}
+
 fn leads_out_of_check(action: &Action, state: &mut GameState) -> bool {
     let next_to_move = state.next_to_move();
     state.evaluate_with_action(action.clone(), |new_state| !is_in_check(&new_state, next_to_move))
 }
 
 pub fn opponent_can_capture(coord: &Coordinate, my_side: Side, state: &GameState) -> bool {
+    println!("{:?} {:?}", coord, my_side);
     state.board().pieces_with_coordinates()
         .into_iter()
         .filter(|&(_coordinate, piece)| piece.side() != my_side)
-        .flat_map(|(coordinate, _piece)| enumerate_all_actions(&coordinate, &state))
+        .flat_map(|(coordinate, _piece)| enumerate_all_captures(&coordinate, &state))
         .any(|action| action_matches_coordinate(&action, coord))
 }
 
