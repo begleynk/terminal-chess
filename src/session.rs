@@ -113,6 +113,11 @@ impl Session {
             },
             Key::Char('a') => {
                 if let Some(action) = ai::make_move(self.current_game.state_mut()) {
+                    match action {
+                        Action::Capture(_,_,_,ref to) => self.cursor.move_to_coord(to),
+                        Action::MovePiece(_,_,ref to) => self.cursor.move_to_coord(to),
+                        _ => {}
+                    }
                     self.current_game.advance(action).expect("Illegal move found");
                 }
             },

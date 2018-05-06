@@ -216,6 +216,11 @@ impl Cursor {
         }
     }
 
+    pub fn move_to_coord(&mut self, coord: &Coordinate) {
+        self.row = coord.row();
+        self.column = coord.column();
+    }
+
     pub fn to_coord(&self) -> Coordinate {
         Coordinate::new(self.row, self.column)
     }
