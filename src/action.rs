@@ -3,7 +3,7 @@ use std::fmt;
 use board::Coordinate;
 use piece::Piece;
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Copy)]
 pub enum Action {
     MovePiece(Piece, Coordinate, Coordinate),
     Capture(Piece, Piece, Coordinate, Coordinate),

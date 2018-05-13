@@ -1,6 +1,15 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
 extern crate termion;
+extern crate tokio;
+extern crate bytes;
+#[macro_use]
+extern crate futures;
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+
 mod piece;
 mod game;
 mod board;
@@ -9,6 +18,8 @@ mod ui;
 mod session;
 mod action;
 mod ai;
+mod protocol;
+pub mod server;
 
 use std::fmt;
 use session::Session;
@@ -19,7 +30,7 @@ pub fn new_session() -> Session {
     Session::new()
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Copy, Clone)]
 pub enum Side {
     White,
     Black,

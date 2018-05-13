@@ -2,7 +2,7 @@ use piece::{Piece, Rank};
 use Side;
 use fmt;
 
-#[derive(PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct Board {
     data: [[Option<Piece>; 8]; 8],
 }
@@ -117,7 +117,7 @@ impl Board {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Copy)]
 pub struct Coordinate {
     row: usize,
     column: usize,

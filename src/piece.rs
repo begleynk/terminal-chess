@@ -1,7 +1,7 @@
 use Side;
 use std::fmt;
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Copy)]
 pub struct Piece {
     repr: u8
 }

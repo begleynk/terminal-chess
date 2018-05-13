@@ -4,7 +4,7 @@ use board::{Board, Coordinate};
 use engine;
 use action::Action;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct GameState {
     next_to_move: Side,
     history: Vec<Action>,
