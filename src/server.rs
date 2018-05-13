@@ -109,10 +109,16 @@ impl Stream for Commands {
             // Drop the trailing \r\n
             line.split_off(pos);
 
-            let message: ClientMessage = serde_json::from_reader(line.into_buf().reader()).unwrap();
+            let message = serde_json::from_reader(line.into_buf().reader());
 
             // Return the line
-            return Ok(Async::Ready(Some(message)));
+            return match message {
+                Ok(valid_message) => Ok(Async::Ready(Some(valid_message))),
+                Err(invalid_message) => {
+                    println!("Invalid message: {:?}", invalid_message);
+                    Ok(Async::Ready(None))
+                }
+            }
         }
 
         if sock_closed {
