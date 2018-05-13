@@ -3,8 +3,7 @@ use action;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ClientMessage {
-    Foo(String)
-//    Action(action::Action),
+    Action(action::Action),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
