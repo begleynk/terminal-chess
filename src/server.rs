@@ -5,8 +5,6 @@ use tokio::io;
 use tokio::net::{TcpListener, TcpStream};
 use bytes::{BufMut, BytesMut, IntoBuf, Buf};
 
-use std::io::Read;
-
 use protocol::ClientMessage;
 use serde_json;
 
